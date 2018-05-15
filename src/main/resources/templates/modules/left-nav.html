@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+<!-- Left side column. contains the logo and sidebar -->
+<aside class="main-sidebar" th:fragment="navbar">
+  <!-- sidebar: style can be found in sidebar.less -->
+  <section class="sidebar">
+    <!-- Sidebar user panel -->
+    <div class="user-panel">
+      <div class="pull-left image">
+        <img th:src="@{/img/lte/dk.png}" class="img-circle" alt="User Image"/>
+      </div>
+      <div class="pull-left info">
+        <p th:text="${session.user.name}">kingroot</p>
+        <a href="#"><i class="fa fa-circle text-success"></i> 在线</a>
+      </div>
+    </div>
+    <!-- search form -->
+    <form action="#" method="get" class="sidebar-form">
+      <div class="input-group">
+        <input type="text" name="q" class="form-control" placeholder="搜索..."/>
+        <span class="input-group-btn">
+                <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
+                </button>
+              </span>
+      </div>
+    </form>
+    <!-- /.search form -->
+    <!-- sidebar menu: : style can be found in sidebar.less -->
+    <ul class="sidebar-menu">
+      <li class="header">功能导航</li>
+
+      <li class="treeview active" onclick="changePage(this, '/auditsys/dashboard/content')">
+        <a href="javascript:void(0);">
+          <i class="fa fa-dashboard"></i>
+          <span>综合信息</span>
+          <span class="pull-right-container">
+              <i name="arrow" class="fa fa-angle-right pull-left"></i>
+          </span>
+        </a>
+      </li>
+
+      <li class="treeview">
+        <a href="javascript:void(0);">
+          <i class="fa fa-tasks"></i>
+          <span>项目管理</span>
+          <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
+        <ul class="treeview-menu" style="display: none;">
+          <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/projects/show?create=true');"><i class="fa fa-circle-o"></i>新建项目</a></li>
+          <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/projects/show');"><i class="fa fa-circle-o"></i>项目列表</a></li>
+          <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/projects/show?assign=true');"><i class="fa fa-circle-o"></i>审计任务分配</a></li>
+        </ul>
+      </li>
+      <li class="treeview">
+        <a href="javascript:void(0);">
+          <i class="fa fa-tasks"></i>
+          <span>业务流程</span>
+          <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
+        <ul class="treeview-menu" style="display: none;">
+          <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show?create=true');"><i class="fa fa-circle-o"></i>新建项目</a></li>
+          <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show');"><i class="fa fa-circle-o"></i>业务列表</a></li>
+          <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show2?category=projectNode');"><i class="fa fa-circle-o"></i>工程节点</a></li>
+          <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show2?category=projectVisa');"><i class="fa fa-circle-o"></i>工程签证</a></li>
+          <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show2?category=hiddenProject');"><i class="fa fa-circle-o"></i>隐蔽工程</a></li>
+        </ul>
+      </li>
+      <li class="treeview" onclick="changePage(this, '/auditsys/files/show')">
+        <a href="javascript:void(0);">
+          <i class="fa fa-files-o"></i> <span>文件管理</span>
+          <span class="pull-right-container">
+              <i name="arrow" class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
+      </li>
+      <!--<li>-->
+        <!--<a href="pages/widgets.html">-->
+          <!--<i class="fa fa-envelope"></i> <span>消息管理</span>-->
+          <!--<span class="pull-right-container">-->
+              <!--<i class="fa fa-angle-left pull-right"></i>-->
+            <!--</span>-->
+        <!--</a>-->
+      <!--</li>-->
+      <!--<li class="treeview">-->
+        <!--<a href="#">-->
+          <!--<i class="fa fa-pie-chart"></i>-->
+          <!--<span>态势分析</span>-->
+          <!--<span class="pull-right-container">-->
+              <!--<i class="fa fa-angle-left pull-right"></i>-->
+            <!--</span>-->
+        <!--</a>-->
+        <!--<ul class="treeview-menu">-->
+          <!--<li><a href="pages/charts/chartjs.html"><i class="fa fa-circle-o"></i> ChartJS</a></li>-->
+          <!--<li><a href="pages/charts/morris.html"><i class="fa fa-circle-o"></i> Morris</a></li>-->
+          <!--<li><a href="pages/charts/flot.html"><i class="fa fa-circle-o"></i> Flot</a></li>-->
+          <!--<li><a href="pages/charts/inline.html"><i class="fa fa-circle-o"></i> Inline charts</a></li>-->
+        <!--</ul>-->
+      <!--</li>-->
+      <li class="treeview" onclick="changePage(this, '/auditsys/users/show')">
+        <a href="javascript:void(0);">
+          <i class="fa fa-users"></i>
+          <span>用户管理</span>
+          <span class="pull-right-container">
+              <i name="arrow" class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
+      </li>
+      <li class="treeview" onclick="changePage(this, '/auditsys/org/show')">
+        <!--<a th:href="@{/auditsys/org/show}">-->
+        <a href="javascript:void(0);">
+          <i class="fa fa-sitemap"></i> <span>组织管理</span>
+          <span class="pull-right-container">
+              <i name="arrow" class="fa fa-angle-left pull-right"></i>
+          </span>
+        </a>
+      </li>
+      <li class="header">高级功能</li>
+      <li><a href="#"><i class="fa fa-circle-o text-red"></i> <span>系统设置</span></a></li>
+      <li><a href="#"><i class="fa fa-circle-o text-yellow"></i> <span>安全设置</span></a></li>
+    </ul>
+
+    <script>
+      function changePage(item, pageeUrl) {
+          $(".treeview").removeClass("active");
+          $(".treeview-menu").hide("slow");
+          $(item).addClass("active");
+          $("[name='arrow']").removeClass("fa fa-angle-right pull-left");
+          $("[name='arrow']").addClass("fa fa-angle-left pull-right");
+
+          $(item).find("[name='arrow']").removeClass("fa fa-angle-left pull-right");
+          $(item).find("[name='arrow']").addClass("fa fa-angle-right pull-left");
+
+          $("#mainContentFrame").attr("src", pageeUrl);
+      }
+
+//      function showMenu(item) {
+//          $("ul", this).show();
+//      }
+
+    </script>
+
+  </section>
+  <!-- /.sidebar -->
+</aside>
+
+</body>
+</html>

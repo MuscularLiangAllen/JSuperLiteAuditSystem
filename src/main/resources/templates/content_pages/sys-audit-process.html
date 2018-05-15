@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="/modules/header::css_library"></head>
+<div th:replace="/modules/bottom::js_library"></div>
+
+<script th:src="@{/plugins/fineuploader/fine-uploader.core.min.js}"></script>
+<script th:src="@{/plugins/fineuploader/fine-uploader.min.js}"></script>
+
+<link rel="stylesheet" th:href="@{/plugins/timelinejs/time.css}" />
+<script th:src="@{/plugins/timelinejs/time.js}"></script>
+
+<style type="text/css">
+  @media (max-width: 1667px) {
+    .timeline-zone {
+      width: 100%;
+      margin-bottom: 15px;
+      overflow-x: scroll;
+      overflow-y: hidden;
+      border: 1px solid #dddddd;
+      -ms-overflow-style: -ms-autohiding-scrollbar;
+      -webkit-overflow-scrolling: touch;
+    }
+    .table-responsive > .table {
+      margin-bottom: 0;
+    }
+    .table-responsive > .table > thead > tr > th,
+    .table-responsive > .table > tbody > tr > th,
+    .table-responsive > .table > tfoot > tr > th,
+    .table-responsive > .table > thead > tr > td,
+    .table-responsive > .table > tbody > tr > td,
+    .table-responsive > .table > tfoot > tr > td {
+      white-space: nowrap;
+    }
+
+  tbody>tr>td {
+    border: 1px solid #bbb !important;
+  }
+</style>
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+    <!-- Content Header (Page header) -->
+    <section id="vsearch" class="content-header" style="border: 0px solid red; height: 50px; padding-top: 0px;">
+      <div class="row" style="padding-top: 10px; padding-bottom: 0px;">
+        <div class="col-lg-10 col-md-10">
+          <div class="col-lg-9 col-md-9">
+            <h3 style="font-family: 'Microsoft YaHei'; margin-top: 5px;">
+              审计事务
+              <small>Audit Affairs</small>
+            </h3>
+          </div>
+          <div class="col-lg-3 col-md-3">
+            <div class="input-group" style="float: right; margin-top: 5px;">
+              <input id="keyword" type="text" class="form-control" v-model="keyword" v-on:keyup.enter="search"/>
+              <span class="input-group-btn">
+						<button class="btn btn-default" type="button" v-on:click="search">
+							搜索
+						</button>
+					</span>
+            </div>
+          </div>
+          <script>
+          </script>
+        </div>
+        <div class="col-lg-2 col-md-2">
+          <ol class="breadcrumb" style="background-color: #FFF; border: 0px solid green;">
+            <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
+            <li class="active">业务列表</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <input id="rootpath" type="hidden" th:value="@{/}"></input>
+      <input id="path" type="hidden" th:value="@{/auditsys}"></input>
+      <input id="totalCounts" type="hidden" th:value="${totalCounts}"></input>
+      <input id="create" type="hidden" th:value="${create}"></input>
+      <input id="projectID" type="hidden" th:value="${project.ID}"></input>
+      <input id="projectName" type="hidden" th:value="${project.projectName}"></input>
+      <input id="projectLoc" type="hidden" th:value="${project.projectLoc}"></input>
+      <input id="leadingOrg" type="hidden" th:value="${project.leadingOrg}"></input>
+      <input id="projectContractorName" type="hidden" th:value="${project.projectContractorName}"></input>
+
+      <!-- Small boxes (Stat box) -->
+      <!-- /.row -->
+      <!-- Main row -->
+      <div class="row">
+        <!-- Left col -->
+        <section class="col-lg-12 connectedSortable">
+
+          <div class="box box-primary">
+            <div class="box-header">
+              <i class="ion ion-clipboard"></i>
+              <h3 class="box-title" style="font-family: 'Microsoft YaHei';" th:text="${'当前项目: '+project.projectName}"></h3><br/>
+            </div>
+            <!-- /.box-header -->
+
+            <div class="row">
+              <h3 style="text-align: center; font-family: 'Microsoft YaHei';">工程节点管理<a href="javascript:showNodeAddModal();" style="font-size: 15px;">【✚新建节点】</a></h3>
+
+                <div class="flowChart"></div>
+                <script type="javascript">
+                    function loadNodeList() {
+                        var url = $("#path").val() + '/project-nodes/node-list-json';
+                        $.ajax({
+                            type: 'GET',
+                            url: url,
+                            data: {
+                                projectID: $('#projectID').val(),
+                            },
+                            success: function(result) {
+                                timeAxis(result);
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                alert(errorThrown);
+                            }
+                        });
+                    }
+                    var jsonArr = loadNodeList();
+                </script>
+
+            </div>
+
+            <div class="row" style="margin-top: 30px;">
+              <div class="col-md-4 col-lg-4">
+                <div class="box box-widget widget-user-2" style="border: 1px solid #cde7f8;">
+                  <div class="widget-user-header" style="font-size: 16px; font-weight: bold; background-color: #cde7f8; text-align: center; padding-top: 5px; padding-bottom: 5px;">
+                    工程签证
+                    <a href="javascript:void(0);" onclick="javascript:showVisaModal();" style="float: right;"><span class="pull-right badge bg-green" style="margin-top: 2px;">+新建</span></a>
+                  </div>
+                  <div class="box-footer no-padding">
+                    <ul class="nav nav-stacked">
+                      <table class="table table-bordered">
+                        <thead>
+                        <tr style="background-color: #eee; border: 1px solid #bbb;">
+                          <th style="width: 28px; border: 1px solid #bbb;">#</th>
+                          <th style="border: 1px solid #bbb;">签证名</th>
+                          <th style="width: 130px;border: 1px solid #bbb;">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="projectVisa, status : ${projectVisaList}">
+                          <tr>
+                            <td th:text="${status.count}">1</td>
+                            <td>
+                              <th:block th:text="${projectVisa.visaName}"></th:block><br></br>
+                              <span style="float: right; font-size: 12px; color: #DD4B39;" th:text="${projectVisa.createDate}"></span>
+                            </td>
+                            <td>
+                              <a href="#">修改</a>/
+                              <a href="javascript:void(0);" th:onclick="'javascript:deleteProjectVisa(\''+${projectVisa.visaID}+'\');'">删除</a>/
+                              <a th:href="${'/auditsys/files/download/'+projectVisa.visaFolderID}">下载</a>
+                            </td>
+                          </tr>
+                        </th:block>
+                        </tbody>
+                      </table>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4 col-lg-4">
+                <div class="box box-widget widget-user-2" style="border: 1px solid #FF9933;">
+                  <div class="widget-user-header" style="font-size: 16px; font-weight: bold; background-color: #FF9933; text-align: center; padding-top: 5px; padding-bottom: 5px;">
+                    隐蔽工程
+                    <a href="#" style="float: right;"><span class="pull-right badge bg-green" style="margin-top: 2px;">+新建</span></a>
+                  </div>
+                  <div class="box-footer no-padding">
+                    <table class="table table-bordered">
+                      <thead>
+                      <tr style="background-color: #eee; border: 1px solid #bbb;">
+                        <th style="width: 28px; border: 1px solid #bbb;">#</th>
+                        <th style="border: 1px solid #bbb;">签证名</th>
+                        <th style="width: 130px;border: 1px solid #bbb;">操作</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      <th:block th:each="projectVisa, status : ${projectVisaList}">
+                        <tr>
+                          <td th:text="${status.count}">1</td>
+                          <td>
+                            <th:block th:text="${projectVisa.visaName}"></th:block><br></br>
+                            <span style="float: right; font-size: 12px; color: #DD4B39;" th:text="${projectVisa.createDate}"></span>
+                          </td>
+                          <td>
+                            <a href="#">修改</a>/
+                            <a href="#">删除</a>/
+                            <a href="#">下载</a>
+                          </td>
+                        </tr>
+                      </th:block>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <!-- /.box-body -->
+
+          </div>
+          <!-- /.box -->
+
+        </section>
+        <!-- /.Left col -->
+        <!-- right col (We are only adding the ID to make the widgets sortable)-->
+
+        <!-- right col -->
+      </div>
+      <!-- /.row (main row) -->
+
+    </section>
+
+  <!-- 工程签证窗口 -->
+    <div class="modal fade" id="projectVisaModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" >
+      <div class="modal-dialog" role="document" style="width: 80%;">
+        <div id="assignInfo" class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" style="font-family: 'Microsoft YaHei';">
+              新建工程签证
+              <span style="color: red; font-size: 12px">&nbsp;(*项为必填项目)</span></h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <div class="row" style="margin-left:40px; margin-right:auto; width: 85%; ">
+              <div class="col-sm-12 col-md-12 col-lg-12" style="float:left;">
+                <div class="form-group" style="margin-top: -10px;">
+                  <label style="color: red;">*</label><label>施工单位名称:</label>
+                  <input type="text" th:value="${project.projectContractorName}" readonly="readonly" style="width: 30%; background-color: #FFFFCC;" />
+                  <label style="color: red;">*</label><label>项目管理部门:</label>
+                  <input type="text" th:value="${project.leadingOrg}" readonly="readonly" style="width: 30%; background-color: #FFFFCC;" />
+                </div>
+                <div class="form-group" style="margin-top: -10px;">
+                  <label style="color: red;">*</label><label>工&nbsp;&nbsp;程&nbsp;&nbsp;名&nbsp;&nbsp;&nbsp;称:</label>
+                  <input type="text" th:value="${project.projectName}" readonly="readonly" style="width: 30%; background-color: #FFFFCC;" />
+                  <label style="color: red;">*</label><label>工&nbsp;&nbsp;程&nbsp;&nbsp;地&nbsp;&nbsp;&nbsp;点:</label>
+                  <input type="text" th:value="${project.projectLoc}" readonly="readonly" style="width: 30%; background-color: #FFFFCC;" />
+                </div>
+                  <div class="form-group" style="margin-top: -10px;">
+                    <label style="color: red;">*</label><label>签&nbsp;&nbsp;证&nbsp;&nbsp;名&nbsp;&nbsp;&nbsp;称:</label>
+                    <input id="visaName" type="text" style="width: 30%;" />
+                  </div>
+
+                <table class="table table-bordered visaTable">
+                  <thead>
+                  <tr style="background-color: #eee; border: 1px solid #bbb;">
+                    <th style="width: 30px; border: 1px solid #bbb;">#</th>
+                    <th style="border: 1px solid #bbb;">签证内容</th>
+                    <th style="width: 80px; border: 1px solid #bbb;">单位</th>
+                    <th style="width: 80px; border: 1px solid #bbb;">数量</th>
+                    <th style="border: 1px solid #bbb;">签证原因</th>
+                  </tr>
+                  </thead>
+                  <tbody id="visaTableBody">
+                    <tr>
+                      <td>1</td>
+                      <td contentEditable="plaintext-only" id="visaItemContent1"></td>
+                      <td contentEditable="plaintext-only" id="visaItemUnit1"></td>
+                      <td contentEditable="plaintext-only" id="visaItemQty1"></td>
+                      <td contentEditable="plaintext-only" id="visaItemReason1"></td>
+                    </tr>
+                  </tbody>
+                </table>
+                  <button class="btn btn-danger btn-sm" onclick="delVisaItem()" style="float: right;"><i class="fa fa-remove"></i> 删除一行</button>
+                  <button class="btn btn-success btn-sm" onclick="addNewVisaItem()" style="float: right; margin-right: 10px;"><i class="fa fa-plus"></i> 追加一行</button>
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="createNewVisa();">保&nbsp;&nbsp;存</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 工程节点窗口 -->
+    <div class="modal fade" id="projectNodeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div id="projectNodeInfo" class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel" style="font-family: 'Microsoft YaHei';">
+              <template v-if="nodeID != ''">
+                <template v-if="isPicUploader != ''">
+                  添加照片
+                </template>
+                <template v-else="v-else">
+                  修改节点
+                </template>
+              </template>
+              <template v-else="v-else">
+                新建节点
+              </template>
+              <span style="color: red; font-size: 12px">&nbsp;(*项为必填项目)</span></h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <div class="row" style="margin-left:auto; margin-right:auto; width: 85%; ">
+              <div class="col-sm-12 col-md-12" style="float:left;">
+                <form id="vform">
+                  <input type="hidden" id="tmpFileID"/>
+
+                  <template v-if="isPicUploader == ''">
+                    <div class="form-group" style="margin-top: -6px;">
+                      <label style="color: red;">*</label><label>节点名称:</label>
+                      <input v-model="projectNodeName" name="projectNodeName" type="text" style="width: 75%;" class="required digit" /><br></br>
+                    </div>
+                    <div class="form-group" style="margin-top: -10px;">
+                      <label style="color: red;">*</label><label>开始日期:</label>
+                      <input id="startDate" name="startDate" onfocus="selectDate(this);" type="text" style="width: 23%;" class="required"/>&nbsp;
+                      <label style="color: red;">*</label><label>结束日期:</label>
+                      <input id="endDate" name="endDate" onfocus="selectDate(this);" type="text" style="width: 23%;" class="required"/><br></br>
+                    </div>
+
+                    <div class="form-group" style="margin-top: -10px;">
+                      <label style="color: red;">*</label><label>主要内容:</label><br></br>
+                      <textarea v-model="desc" name="desc" type="text" rows="3" style="width: 75%; margin-top: -22px; margin-left: 70px;" class="required"/><br></br>
+                    </div>
+                  </template>
+
+                  <div id="nodeInfoUploadZone" class="form-group" style="margin-top: -5px; display: block;">
+                    <div id="fine-uploader">
+                    </div>
+
+                    <script type="text/template" id="qq-template">
+                      <div class="qq-uploader-selector" style="height: 50px;">
+                        <div class="qq-upload-button-selector qq-upload-button">
+                          <div>上传照片</div>
+                        </div>
+                        <ul class="qq-upload-list-selector qq-upload-list">
+                          <li>
+                            <div class="qq-progress-bar-container-selector">
+                              <div class="qq-progress-bar-selector qq-progress-bar"></div>
+                            </div>
+                            <span class="qq-upload-spinner-selector qq-upload-spinner"></span>
+                            <span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>
+                            <span class="qq-upload-file-selector qq-upload-file" style="max-width: 280px;"></span>
+                            <span class="qq-upload-size-selector qq-upload-size"></span>
+                            <a class="qq-upload-cancel-selector qq-upload-cancel" href="#">放弃上传</a>
+                            <a class="qq-upload-retry-selector qq-upload-retry" href="#">重试</a>
+                            <a class="qq-upload-delete-selector qq-upload-delete" href="#">删除</a>
+                            <span class="qq-upload-status-text-selector qq-upload-status-text"></span>
+                          </li>
+                        </ul>
+                      </div>
+                    </script>
+
+                  </div>
+
+                </form>
+
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <template v-if="nodeID != ''">
+              <template v-if="isPicUploader != ''">
+                <button type="button" class="btn btn-primary" v-on:click="addPic">上&nbsp;&nbsp;传</button>
+              </template>
+              <template v-else="v-else">
+                <button type="button" class="btn btn-primary" v-on:click="update">修&nbsp;&nbsp;改</button>
+              </template>
+            </template>
+            <template v-else="v-else">
+              <button type="button" class="btn btn-primary" v-on:click="add">保&nbsp;&nbsp;存</button>
+            </template>
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 工程节点添加照片 -->
+    <!--<div class="modal fade" id="nodePicModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">-->
+      <!--<div class="modal-dialog" role="document">-->
+        <!--<div id="nodePicInfo" class="modal-content">-->
+          <!--<div class="modal-header">-->
+            <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
+            <!--<h4 class="modal-title" style="font-family: 'Microsoft YaHei';">-->
+              <!--上传照片-->
+            <!--</h4>-->
+          <!--</div>-->
+          <!--<div class="modal-body" style="text-align: left;">-->
+            <!--<div class="row" style="margin-left:auto; margin-right:auto; width: 85%; ">-->
+              <!--<div class="col-sm-12 col-md-12" style="float:left;">-->
+                  <!--<input type="hidden" id="nodeID" name="nodeID"/>-->
+                  <!--<input type="file" />-->
+              <!--</div>-->
+            <!--</div>-->
+
+          <!--</div>-->
+          <!--<div class="modal-footer">-->
+            <!--<button type="button" class="btn btn-primary" v-on:click="add">保&nbsp;&nbsp;存</button>-->
+            <!--<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>-->
+          <!--</div>-->
+        <!--</div>-->
+      <!--</div>-->
+    <!--</div>-->
+
+<!-- ACL Modal -->
+<div th:replace="/modules/orgACL::zTreeList"></div>
+
+<script th:src="@{/plugins/JQueryZtree/jquery.ztree.core.min.js}"></script>
+<script th:src="@{/plugins/JQueryZtree/jquery.ztree.excheck.min.js}"></script>
+
+<script th:src="@{/js/vue/vue.min.js}"></script>
+
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+
+  var visaItemCounter = 1;
+
+  function showVisaModal() {
+      $('#projectVisaModal').modal('show');
+  }
+  
+  function createNewVisa() {
+      var visaName = $('#visaName').val().replace(/\s/g,"");
+      if(visaName == null || visaName == '') {
+          alert('签证名不能为空');
+          return;
+      }
+
+      var visaItemContentArray = new Array(visaItemCounter);
+      var visaItemUnitArray = new Array(visaItemCounter);
+      var visaItemQtyArray = new Array(visaItemCounter);
+      var visaItemReasonArray = new Array(visaItemCounter);
+
+      for(var i=1; i<=visaItemCounter; i++) {
+          if($('#visaItemContent'+i).text().replace(/\s/g,"") == null || $('#visaItemContent'+i).text().replace(/\s/g,"") == '') {
+              if(i == 1) {
+                  alert('请填写签证内容');
+                  return;
+              }
+              alert('请删除多余数据行再提交');
+              return;
+          }
+          visaItemContentArray[i-1] = $('#visaItemContent'+i).text().replace(/\s/g,"");
+          visaItemUnitArray[i-1] = $('#visaItemUnit'+i).text();
+          visaItemQtyArray[i-1] = $('#visaItemQty'+i).text();
+          visaItemReasonArray[i-1] = $('#visaItemReason'+i).text();
+      }
+
+      var url = $("#path").val() + '/audits/createProjectVisa';
+      $.ajax({
+          type: 'POST',
+          url: url,
+          data: {
+              projectID: $('#projectID').val(),
+              visaName: visaName,
+              visaItemContentArray: visaItemContentArray,
+              visaItemUnitArray: visaItemUnitArray,
+              visaItemQtyArray: visaItemQtyArray,
+              visaItemReasonArray: visaItemReasonArray
+          },
+          success: function(result) {
+              var res = JSON.parse(result);
+              alert(res.message);
+              window.location.reload();
+          },
+          error: function (XMLHttpRequest, textStatus, errorThrown) {
+              alert(errorThrown);
+          }
+      });
+
+
+  }
+  
+  function addNewVisaItem() {
+      $('#visaTableBody').append('<tr id="visaItem' + ++visaItemCounter+ '"><td>' + visaItemCounter +'</td><td contentEditable="plaintext-only" id="visaItemContent'+ visaItemCounter +'"></td>'+
+      '<td contentEditable="plaintext-only" id="visaItemUnit' +visaItemCounter+ '"></td><td contentEditable="plaintext-only" id="visaItemQty' +visaItemCounter+ '"></td><td contentEditable="plaintext-only" id="visaItemReason' +visaItemCounter+ '"></td></tr>');
+  }
+  function delVisaItem() {
+      if(visaItemCounter == 1) return;
+      $('#visaItem'+visaItemCounter--).remove();
+  }
+
+  function deleteProjectVisa(projectVisaID) {
+      if(window.confirm("确定删除该签证?")) {
+          var url = $("#path").val() + '/audits/deleteProjectVisa';
+          $.ajax({
+              type: 'POST',
+              url: url,
+              data: {
+                  projectVisaID: projectVisaID,
+              },
+              success: function(result) {
+                  var res = JSON.parse(result);
+                  alert(res.message);
+                  window.location.reload();
+              },
+              error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  alert(errorThrown);
+              }
+          });
+      }
+      return;
+
+  }
+
+  jQuery.validator.setDefaults({
+      debug: true,
+      success: "valid"
+  });
+
+  jQuery.validator.addMethod("isPhone", function(value,element) {
+      var length = value.length;
+      var mobile = /^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1}))+\d{8})$/;
+      return this.optional(element) || mobile.test(value);
+
+  }, "请正确填写您的联系电话(手机)");
+
+
+  var projectNodeInfo = new Vue({
+      el: '#projectNodeInfo',
+      data: {
+          projectNodeName: '',
+          startDate: '',
+          endDate: '',
+          desc: '',
+          nodeID: '',
+          isPicUploader: ''
+      },
+      methods: {
+          validate: function () {
+              var errorSymbol = "<span style='color: red; font-size: 18px;'>&nbsp;x</span>";
+              var vform = $("#vform");
+              vform.validate({
+                  rules: {
+                      projectNodeName: {
+                          required: true,
+                          minlength: 4
+                      },
+                      startDate: {
+                          required: true,
+                          dateISO: true
+                      },
+                      endDate: {
+                          required: true,
+                          dateISO:true
+                      },
+                      desc: {
+                          required: true,
+                          minlength: 4,
+                          maxlength: 120
+                      }
+                  },
+                  messages: {
+                      projectNodeName: {
+                          required: errorSymbol,
+                          minlength: errorSymbol
+                      },
+                      startDate: {
+                          required: errorSymbol,
+                          dateISO:errorSymbol
+                      },
+                      endDate: {
+                          required: errorSymbol,
+                          dateISO:errorSymbol
+                      },
+                      desc: {
+                          required: errorSymbol,
+                          minlength: errorSymbol,
+                          maxlength: "<span style='color: red; font-size: 18px;'>&nbsp;不能超过120字</span>"
+                      },
+                  }
+              });
+              return vform;
+          },
+          add: function () {
+              if(this.validate().valid() == false) {
+                  alert('数据项录入有误, 请按照提示修改');
+                  return;
+              }
+              var path = $('#path').val();
+              var url = path + '/audits/createProjectNode';
+              var projectID = $('#projectID').val();
+              var tmpFileID = $('#tmpFileID').val();
+              var startDate = $('#startDate').val();
+              var endDate = $('#endDate').val();
+
+              $.ajax({
+                  type: 'POST',
+                  url: url,
+                  data: {projectID: projectID, projectNodeName: this.projectNodeName, startDate: startDate,
+                      endDate: endDate, desc: this.desc, tmpFileID: tmpFileID},
+                  success: function(result) {
+                      var res = JSON.parse(result);
+                      alert(res.message);
+                      window.location.reload();
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          },
+          addPic: function () {
+              var path = $('#path').val();
+              var url = path + '/audits/addNodePic';
+              var tmpFileID = $('#tmpFileID').val();
+
+              $.ajax({
+                  type: 'POST',
+                  url: url,
+                  data: {nodeID: this.nodeID, tmpFileID: tmpFileID},
+                  success: function(result) {
+                      var res = JSON.parse(result);
+                      alert(res.message);
+                      window.location.reload();
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          },
+          update: function () {
+              if(this.validate().valid() == false) {
+                  alert('数据项录入有误, 请按照提示修改');
+                  return;
+              }
+              var path = $('#path').val();
+              var url = path + '/audits/projectNodeUpdate';
+              var startDate = $('#startDate').val();
+              var endDate = $('#endDate').val();
+
+
+              $.ajax({
+                  type: 'POST',
+                  url: url,
+                  data: {projectID: this.projectID,
+                      projectName: this.projectName,
+                      projectLoc: this.projectLoc,
+                      expectedStartDate: eStartDate,
+                      expectedEndDate: eEndDate,
+                      startDate: startDate,
+                      endDate: endDate,
+                      duration: this.duration,
+                      bidType: this.bidType,
+                      ctrlPrice: this.ctrlPrice,
+                      contractType: this.contractType,
+                      contractPrice: this.contractPrice,
+                      deptIDs: deptIDs,
+                      projectLeader: this.projectLeader,
+                      projectLeaderTel: this.projectLeaderTel,
+                      contractorName: this.contractorName,
+                      contractorManager: this.contractorManager,
+                      contractorManagerTel: this.contractorManagerTel,
+                      supervisionName: this.supervisionName,
+                      supervisorName: this.supervisorName,
+                      supervisorTel: this.supervisorTel,
+                      projectObjectives: this.projectObjectives,
+                      projectMainContent: this.projectMainContent,
+                      leadingOrg: leadingOrg
+                  },
+                  success: function(result) {
+                      var res =  eval(result);
+                      alert(res["message"]);
+                      window.location.reload();
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+
+          },
+          cancel: function () {
+              window.location.reload();
+          }
+
+      }
+  });
+
+
+  var dateFmt = {
+      ishmsVal:false,
+      minDate:"1900-01-01 00:00:00",
+      maxDate:"2099-12-31 23:59:59",
+      format:"YYYY/MM/DD",
+      zIndex:3000,
+  }
+
+  function selectDate(dom) {
+      $(dom).jeDate(dateFmt);
+  }
+
+  function initPicUploader() {
+      return new qq.FineUploader({
+          debug: true,
+          multiple: false,
+          element: document.getElementById('fine-uploader'),
+          validation: {
+              allowedExtensions: ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'heic'],
+              sizeLimit: 10*1024*1024 // 10MB.
+          },
+          request: {
+              endpoint: '/auditsys/files/upload'
+          },
+          deleteFile: {
+              enabled: true,
+              forceConfirm: true,
+              confirmMessage: '确定要删除文件 {filename} 吗?',
+              deletingFailedText: '删除失败!',
+              endpoint: '/auditsys/files/delete_tmp'
+          },
+          retry: {
+              enableAuto: true
+          },
+          callbacks: {
+              onComplete: function(id, failIDs, responseJSON)  {
+                  $("#tmpFileID").val(responseJSON.newUuid);
+              }
+
+          }
+      });
+  }
+
+  function showNodeAddModal() {
+      initPicUploader();
+      $("#projectNodeModal").modal("show");
+  }
+
+  function showPicUploadModal(projectID) {
+      projectNodeInfo.nodeID =  '' + projectID + '';
+      projectNodeInfo.isPicUploader = '1';
+      initPicUploader();
+      $("#projectNodeModal").modal("show");
+  }
+
+  $('#projectNodeModal').on('hidden.bs.modal', function () {
+      projectNodeInfo.nodeID = '';
+      projectNodeInfo.isPicUploader = '';
+      clearForm($('#vform'));
+      $('#vform').validate().resetForm();
+  });
+
+  /*]]>*/
+</script>
+
+</body>
+</html>

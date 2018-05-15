@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="/modules/header::css_library"></head>
+<div th:replace="/modules/bottom::js_library"></div>
+
+<script th:src="@{/plugins/fineuploader/fine-uploader.core.min.js}"></script>
+<script th:src="@{/plugins/fineuploader/fine-uploader.min.js}"></script>
+
+<link rel="stylesheet" th:href="@{/plugins/bootstrap-switch/bootstrap-switch.min.css}"/>
+<link rel="stylesheet" th:href="@{/plugins/bootstrap-table/bootstrap-table.min.css}"/>
+
+<link rel="stylesheet" th:href="@{/plugins/timelinejs/time.css}" />
+<script th:src="@{/plugins/timelinejs/time.js}"></script>
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+    <section class="content-header">
+      <h1 style="font-family: 'Microsoft YaHei';">
+          工程节点管理
+        <small>Project Node Management</small>
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
+        <li class="active">综合信息</li>
+      </ol>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <input id="path" type="hidden" th:value="@{/auditsys}"></input>
+      <!-- Main row -->
+      <div class="row">
+        <!-- Left col -->
+        <section class="col-lg-12 col-md-12 connectedSortable">
+          <div class="box box-primary">
+            <!-- /.box-header -->
+            <div class="row">
+              <div style="padding: 15px;">
+                <button class="btn btn-success" onclick="javascript:showNodeAddModal();">✚新建节点(Create)</button>
+              </div>
+              <div class="flowChart"></div>
+              <script th:inline="javascript">
+                  /*<![CDATA[*/
+                  function loadNodeList() {
+                      var url = $("#path").val() + '/project-nodes/node-list-json';
+                      $.ajax({
+                          type: 'POST',
+                          url: url,
+                          data: {
+                              projectID: [[${projectID}]]
+                          },
+                          success: function(result) {
+                              timeAxis(result);
+                          },
+                          error: function (XMLHttpRequest, textStatus, errorThrown) {
+                              alert(errorThrown);
+                          }
+                      });
+                  }
+                  var jsonArr = loadNodeList();
+                  /*]]>*/
+              </script>
+
+            </div>
+            <div class="box-body ">
+              <div id="toolbar" class="btn-group">
+                <button id="btn_delete" type="button" class="btn btn-danger" onclick="javascript:deleteItems();">
+                  <span class="glyphicon glyphicon-remove" aria-hidden="true" ></span>删除 (Delete)
+                </button>
+              </div>
+              <table id="dataTable" class="data-table" style="white-space: nowrap;" width="100%"></table>
+            </div>
+            <!-- /.box-body -->
+
+          </div>
+
+        </section>
+      </div>
+      <!-- /.row (main row) -->
+
+    </section>
+    <!-- /.content -->
+    <div class="modal fade" id="projectNodeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div id="projectNodeInfo" class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel" style="font-family: 'Microsoft YaHei';">
+              <template v-if="nodeID != ''">
+                <template v-if="isPicUploader != ''">
+                  添加照片
+                </template>
+                <template v-else="v-else">
+                  修改节点
+                </template>
+              </template>
+              <template v-else="v-else">
+                新建节点
+              </template>
+              <span style="color: red; font-size: 12px">&nbsp;(*项为必填项目)</span></h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <div class="row" style="margin-left:auto; margin-right:auto; width: 85%; ">
+              <div class="col-sm-12 col-md-12" style="float:left;">
+                <form id="vform">
+                  <input type="hidden" id="tmpFileID"/>
+
+                  <template v-if="isPicUploader == ''">
+                    <div class="form-group" style="margin-top: -6px;">
+                      <label style="color: red;">*</label><label>节点名称:</label>
+                      <input v-model="projectNodeName" name="projectNodeName" type="text" style="width: 75%;" class="required digit" /><br></br>
+                    </div>
+                    <div class="form-group" style="margin-top: -10px;">
+                      <label style="color: red;">*</label><label>开始日期:</label>
+                      <input id="startDate" name="startDate" onfocus="selectDate(this);" type="text" style="width: 23%;" class="required"/>&nbsp;
+                      <label style="color: red;">*</label><label>结束日期:</label>
+                      <input id="endDate" name="endDate" onfocus="selectDate(this);" type="text" style="width: 23%;" class="required"/><br></br>
+                    </div>
+
+                    <div class="form-group" style="margin-top: -10px;">
+                      <label style="color: red;">*</label><label>主要内容:</label><br></br>
+                      <textarea v-model="desc" name="desc" type="text" rows="3" style="width: 75%; margin-top: -22px; margin-left: 70px;" class="required"/><br></br>
+                    </div>
+                  </template>
+
+                  <div id="nodeInfoUploadZone" class="form-group" style="margin-top: -5px; display: block;">
+                    <div id="fine-uploader">
+                    </div>
+
+                    <script type="text/template" id="qq-template">
+                      <div class="qq-uploader-selector" style="height: 50px;">
+                        <div class="qq-upload-button-selector qq-upload-button">
+                          <div>上传照片</div>
+                        </div>
+                        <ul class="qq-upload-list-selector qq-upload-list">
+                          <li>
+                            <div class="qq-progress-bar-container-selector">
+                              <div class="qq-progress-bar-selector qq-progress-bar"></div>
+                            </div>
+                            <span class="qq-upload-spinner-selector qq-upload-spinner"></span>
+                            <span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>
+                            <span class="qq-upload-file-selector qq-upload-file" style="max-width: 280px;"></span>
+                            <span class="qq-upload-size-selector qq-upload-size"></span>
+                            <a class="qq-upload-cancel-selector qq-upload-cancel" href="#">放弃上传</a>
+                            <a class="qq-upload-retry-selector qq-upload-retry" href="#">重试</a>
+                            <a class="qq-upload-delete-selector qq-upload-delete" href="#">删除</a>
+                            <span class="qq-upload-status-text-selector qq-upload-status-text"></span>
+                          </li>
+                        </ul>
+                      </div>
+                    </script>
+
+                  </div>
+
+                </form>
+
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <template v-if="nodeID != ''">
+              <template v-if="isPicUploader != ''">
+                <button type="button" class="btn btn-primary" v-on:click="addPic">上&nbsp;&nbsp;传</button>
+              </template>
+              <template v-else="v-else">
+                <button type="button" class="btn btn-primary" v-on:click="update">修&nbsp;&nbsp;改</button>
+              </template>
+            </template>
+            <template v-else="v-else">
+              <button type="button" class="btn btn-primary" v-on:click="add">保&nbsp;&nbsp;存</button>
+            </template>
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<script th:src="@{/plugins/bootstrap-switch/bootstrap-switch.min.js}"></script>
+
+<script th:src="@{/plugins/bootstrap-table/bootstrap-table.min.js}"></script>
+<script th:src="@{/plugins/bootstrap-table/bootstrap-table-zh-CN.min.js}"></script>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+
+    var categoryName = [[${categoryName}]];
+    var link;
+    if(categoryName == 'projectNode')
+        link = '/project-nodes/show';
+
+    function deleteData(code) {
+        var path = $("#path").val();
+        if(window.confirm("确定删除该记录?")){
+            $.ajax({
+                type: "POST",
+                url: path + "/testdata/delete",
+                data: {code: code},
+                success: function(result) {
+                    var res = eval(result)
+                    alert(res["message"]);
+                    window.location.reload();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            });
+        }
+        return;
+    }
+
+
+    var TableInit = function () {
+        var oTableInit = new Object();
+        //初始化Table
+        oTableInit.Init = function () {
+            $('#dataTable').bootstrapTable({
+                url: $('#path').val()+'/project-nodes/load',         //请求后台的URL（*）
+                method: 'get',                      //请求方式（*）
+                toolbar: '#toolbar',                //工具按钮用哪个容器
+                striped: true,                      //是否显示行间隔色
+                cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                pagination: true,                   //是否显示分页（*）
+                uniqueId: 'iD',
+                sortable: true,                     //是否启用排序
+                sortName: 'startDate',
+                sortOrder: "asc",                   //排序方式
+                queryParams: oTableInit.queryParams,//传递参数（*）
+                sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                pageNumber: 1,                       //初始化加载第一页，默认第一页
+                pageSize: 5,                       //每页的记录行数（*）
+                pageList: [5, 10, 15, 20],        //可供选择的每页的行数（*）
+                search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+                contentType: "application/x-www-form-urlencoded",
+                strictSearch: true,
+                showColumns: true,                  //是否显示所有的列
+                showRefresh: true,                  //是否显示刷新按钮
+                minimumCountColumns: 2,             //最少允许的列数
+                clickToSelect: true,                //是否启用点击选中行
+//                height: 700,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                uniqueId: "no",                     //每一行的唯一标识，一般为主键列
+//                showToggle: true,                    //是否显示详细视图和列表视图的切换按钮
+                cardView: false,                    //是否显示详细视图
+                detailView: false,                   //是否显示父子表
+                columns: [
+                    {
+                        checkbox: true
+                    }, {
+                        title: '#',
+                        formatter: function (value, row, index) {
+                            return '节点'+row.seq;
+                        }
+                    }, {
+                        title: '操作',
+                        formatter:function(value, row, index){
+                            return '<a href=\"' + $('#path').val() + '/report/parent-report/generate/online?code=' + row.code + '\">删除</a>'
+                        }
+                    }, {
+                        field: 'name',
+                        title: '节点名称',
+                        sortable : true,
+                        sortName: 'NAME'
+                    }, {
+                        field: 'startDate',
+                        title: '开始时间',
+                        sortable : true,
+                        sortName: 'START_DATE'
+                    }, {
+                        field: 'endDate',
+                        title: '结束时间',
+                        sortable : true,
+                        sortName: 'END_DATE'
+                    }, {
+                        field: 'nodeDesc',
+                        title: '主要内容',
+                        sortable : true,
+                        sortName: 'NODE_DESC'
+                    }, {
+                        // field: 'materialList',
+                        title: '施工主要材料',
+                        formatter:function(value, row, index){
+                            return '<a href=\"' + $('#path').val() + '/files/download/' + row.materialList + '\">下载</a>'
+                        }
+                    }
+                ]
+            });
+
+        };
+
+        //得到查询的参数
+        oTableInit.queryParams = function (params) {
+            var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+                limit: params.limit,   //页面大小
+                offset: params.offset,
+                keyword: params.search,//搜索
+                sort: params.sort,//排序
+                order:params.order//排序字段
+            };
+            return temp;
+        };
+        return oTableInit;
+    };
+
+    var dataTable = new TableInit().Init();
+
+    function deleteItems() {
+        var selectedRows = $('#dataTable').bootstrapTable('getSelections');
+        if(selectedRows == '') {
+            alert('请选择要删除的行');
+            return;
+        }
+        if(window.confirm('确定删除'+selectedRows.length+'条记录?')){
+            var codes = '';
+            for(var i=0; i<selectedRows.length; i++) {
+                codes += selectedRows[i].code+',';
+            }
+            $.ajax({
+                type: 'POST',
+                url: $('#path').val()+'/testdata/deleteItems',
+                data: {codes: codes},
+                success: function(result) {
+                    var res = eval(result);
+                    alert(res['message']);
+                    $('#dataTable').bootstrapTable('refresh');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            });
+        }
+    }
+
+  var projectNodeInfo = new Vue({
+      el: '#projectNodeInfo',
+      data: {
+          projectNodeName: '',
+          startDate: '',
+          endDate: '',
+          desc: '',
+          nodeID: '',
+          isPicUploader: ''
+      },
+      methods: {
+          validate: function () {
+              var errorSymbol = "<span style='color: red; font-size: 18px;'>&nbsp;x</span>";
+              var vform = $("#vform");
+              vform.validate({
+                  rules: {
+                      projectNodeName: {
+                          required: true,
+                          minlength: 4
+                      },
+                      startDate: {
+                          required: true,
+                          dateISO: true
+                      },
+                      endDate: {
+                          required: true,
+                          dateISO:true
+                      },
+                      desc: {
+                          required: true,
+                          minlength: 4,
+                          maxlength: 120
+                      }
+                  },
+                  messages: {
+                      projectNodeName: {
+                          required: errorSymbol,
+                          minlength: errorSymbol
+                      },
+                      startDate: {
+                          required: errorSymbol,
+                          dateISO:errorSymbol
+                      },
+                      endDate: {
+                          required: errorSymbol,
+                          dateISO:errorSymbol
+                      },
+                      desc: {
+                          required: errorSymbol,
+                          minlength: errorSymbol,
+                          maxlength: "<span style='color: red; font-size: 18px;'>&nbsp;不能超过120字</span>"
+                      },
+                  }
+              });
+              return vform;
+          },
+          add: function () {
+              if(this.validate().valid() == false) {
+                  alert('数据项录入有误, 请按照提示修改');
+                  return;
+              }
+              var path = $('#path').val();
+              var url = path + '/project-nodes/createProjectNode';
+              var projectID = [[${projectID}]];
+              var tmpFileID = $('#tmpFileID').val();
+              var startDate = $('#startDate').val();
+              var endDate = $('#endDate').val();
+
+              $.ajax({
+                  type: 'POST',
+                  url: url,
+                  data: {projectID: projectID, projectNodeName: this.projectNodeName, startDate: startDate,
+                      endDate: endDate, desc: this.desc, tmpFileID: tmpFileID},
+                  success: function(result) {
+                      var res = JSON.parse(result);
+                      alert(res.message);
+                      window.location.reload();
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          },
+          addPic: function () {
+              var path = $('#path').val();
+              var url = path + '/project-nodes/addNodePic';
+              var tmpFileID = $('#tmpFileID').val();
+
+              $.ajax({
+                  type: 'POST',
+                  url: url,
+                  data: {nodeID: this.nodeID, tmpFileID: tmpFileID},
+                  success: function(result) {
+                      var res = JSON.parse(result);
+                      alert(res.message);
+                      window.location.reload();
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          },
+          update: function () {
+              if(this.validate().valid() == false) {
+                  alert('数据项录入有误, 请按照提示修改');
+                  return;
+              }
+              var path = $('#path').val();
+              var url = path + '/project-nodes/projectNodeUpdate';
+              var startDate = $('#startDate').val();
+              var endDate = $('#endDate').val();
+
+
+              $.ajax({
+                  type: 'POST',
+                  url: url,
+                  data: {projectID: this.projectID,
+                      projectName: this.projectName,
+                      projectLoc: this.projectLoc,
+                      expectedStartDate: eStartDate,
+                      expectedEndDate: eEndDate,
+                      startDate: startDate,
+                      endDate: endDate,
+                      duration: this.duration,
+                      bidType: this.bidType,
+                      ctrlPrice: this.ctrlPrice,
+                      contractType: this.contractType,
+                      contractPrice: this.contractPrice,
+                      deptIDs: deptIDs,
+                      projectLeader: this.projectLeader,
+                      projectLeaderTel: this.projectLeaderTel,
+                      contractorName: this.contractorName,
+                      contractorManager: this.contractorManager,
+                      contractorManagerTel: this.contractorManagerTel,
+                      supervisionName: this.supervisionName,
+                      supervisorName: this.supervisorName,
+                      supervisorTel: this.supervisorTel,
+                      projectObjectives: this.projectObjectives,
+                      projectMainContent: this.projectMainContent,
+                      leadingOrg: leadingOrg
+                  },
+                  success: function(result) {
+                      var res =  eval(result);
+                      alert(res["message"]);
+                      window.location.reload();
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+
+          },
+          cancel: function () {
+              window.location.reload();
+          }
+
+      }
+  });
+
+  var dateFmt = {
+      ishmsVal:false,
+      minDate:"1900-01-01 00:00:00",
+      maxDate:"2099-12-31 23:59:59",
+      format:"YYYY/MM/DD",
+      zIndex:3000,
+  }
+
+  function selectDate(dom) {
+      $(dom).jeDate(dateFmt);
+  }
+
+  function initPicUploader() {
+      return new qq.FineUploader({
+          debug: true,
+          multiple: false,
+          element: document.getElementById('fine-uploader'),
+          validation: {
+              allowedExtensions: ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'heic'],
+              sizeLimit: 10*1024*1024 // 10MB.
+          },
+          request: {
+              endpoint: '/auditsys/files/upload'
+          },
+          deleteFile: {
+              enabled: true,
+              forceConfirm: true,
+              confirmMessage: '确定要删除文件 {filename} 吗?',
+              deletingFailedText: '删除失败!',
+              endpoint: '/auditsys/files/delete_tmp'
+          },
+          retry: {
+              enableAuto: true
+          },
+          callbacks: {
+              onComplete: function(id, failIDs, responseJSON)  {
+                  $("#tmpFileID").val(responseJSON.newUuid);
+              }
+
+          }
+      });
+  }
+
+  function showNodeAddModal() {
+      initPicUploader();
+      $("#projectNodeModal").modal("show");
+  }
+
+  function showPicUploadModal(projectID) {
+      projectNodeInfo.nodeID =  '' + projectID + '';
+      projectNodeInfo.isPicUploader = '1';
+      initPicUploader();
+      $("#projectNodeModal").modal("show");
+  }
+
+  function clearForm(form) {
+      // input清空
+      $(':input', form).each(function () {
+          var type = this.type;
+          var tag = this.tagName.toLowerCase(); // normalize case
+          if (type == 'text' || type == 'password' || tag == 'textarea')
+              this.value = "";
+          // 多选checkboxes清空
+          // select 下拉框清空
+          else if (tag == 'select')
+              this.selectedIndex = -1;
+      });
+  };
+
+  $('#projectNodeModal').on('hidden.bs.modal', function () {
+      projectNodeInfo.nodeID = '';
+      projectNodeInfo.isPicUploader = '';
+      clearForm($('#vform'));
+      $('#vform').validate().resetForm();
+  });
+
+  /*]]>*/
+</script>
+
+</body>
+</html>

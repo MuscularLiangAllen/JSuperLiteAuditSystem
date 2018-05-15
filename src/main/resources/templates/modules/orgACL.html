@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+  <div th:fragment="zTreeList">
+  <link rel="stylesheet" th:href="@{/plugins/JQueryZtree/zTreeStyle.css}"/>
+  <link rel="stylesheet" th:href="@{/plugins/JQueryZtree/demo.css}"/>
+
+  <div class="modal modal-info fade" id="ACLModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel2" style="font-family: 'Microsoft YaHei';">部门列表</h4>
+        </div>
+        <div class="modal-body" style="text-align: left;">
+          <div class="row" style="margin-left:auto; margin-right:auto; width: 80%; ">
+            <div class="col-sm-12 col-md-12" style="float:left;">
+              <input id="selectedIDs" type="hidden" />
+              <input id="selectedNames" type="hidden" />
+              <div class="zTreeDemoBackground left">
+                <ul id="orgListTree" class="ztree"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="saveACL()">保&nbsp;&nbsp;存</button>
+          <button type="button" class="btn btn-outline" data-dismiss="modal">取消</button>
+        </div>
+      </div>
+    </div>
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+        function showACLModal() {
+            var path = $("#path").val();
+            $.ajax({
+                type: "GET",
+                url: path + "/org/org-list-json",
+                dataType: "json",
+                success: function(result) {
+                    var zNodes = result;
+                    var setting = {
+                        check: {
+                            enable: true
+                        },
+                        data: {
+                            simpleData: {
+                                enable: true
+                            }
+                        },
+                        callback:{
+                            onCheck:onCheck
+                        }
+                    };
+
+                    $.fn.zTree.init($("#orgListTree"), setting, zNodes);
+
+                    var treeObj = $.fn.zTree.getZTreeObj("orgListTree");
+                    treeObj.expandAll(true);
+
+                    function onCheck(e,treeId,treeNode){
+                        nodes = treeObj.getCheckedNodes(true);
+                        var selectedIds = "",
+                            selectedNames = "";
+
+                        for(var i = 0; i<nodes.length; i++){
+                            if(nodes[i].isParent) continue;
+                            selectedNames += nodes[i].name + ",";
+                            selectedIds += nodes[i].id + ",";
+                        }
+                        $("#selectedIDs").val(selectedIds);
+                        $("#selectedNames").val(selectedNames);
+                    }
+
+                    $("#ACLModal").modal("show");
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            });
+        }
+      /*]]>*/
+    </script>
+  </div>
+</div>
+
+</body>
+</html>

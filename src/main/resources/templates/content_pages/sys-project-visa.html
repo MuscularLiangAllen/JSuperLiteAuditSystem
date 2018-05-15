@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="/modules/header::css_library"></head>
+
+<link rel="stylesheet" th:href="@{/plugins/bootstrap-switch/bootstrap-switch.min.css}"/>
+<link rel="stylesheet" th:href="@{/plugins/bootstrap-table/bootstrap-table.min.css}"/>
+
+<style type="text/css">
+  .visaTable>tbody>tr>td {
+    border: 1px solid #bbb !important;
+  }
+</style>
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+    <section class="content-header">
+      <h1 style="font-family: 'Microsoft YaHei';">
+        工程签证管理
+        <small>Project Visa Management</small>
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
+        <li class="active">综合信息</li>
+      </ol>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <input id="path" type="hidden" th:value="@{/auditsys}"></input>
+      <!-- Main row -->
+      <div class="row">
+        <!-- Left col -->
+        <section class="col-lg-12 col-md-12 connectedSortable">
+
+          <div class="box box-primary">
+            <!-- /.box-header -->
+            <div class="box-body ">
+              <div id="toolbar" class="btn-group">
+                <button id="btn_add" type="button" class="btn btn-success" onclick="javascript:showVisaModal();">
+                  <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span>新建签证 (Add)
+                </button>
+                <button id="btn_delete" type="button" class="btn btn-danger" onclick="javascript:deleteItems();">
+                  <span class="glyphicon glyphicon-remove" aria-hidden="true" ></span>删除 (Delete)
+                </button>
+              </div>
+              <table id="dataTable" class="data-table" style="white-space: nowrap;" width="100%"></table>
+            </div>
+            <!-- /.box-body -->
+
+          </div>
+          <!-- /.box -->
+
+        </section>
+      </div>
+
+    </section>
+    <!-- /.content -->
+
+    <div class="modal fade" id="projectVisaModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" >
+      <div class="modal-dialog" role="document" style="width: 80%;">
+        <div id="projectVisaInfo" class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" style="font-family: 'Microsoft YaHei';">
+              新建工程签证
+              <span style="color: red; font-size: 12px">&nbsp;(*项为必填项目)</span></h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <div class="row" style="margin-left:40px; margin-right:auto; width: 85%; ">
+              <div class="col-sm-12 col-md-12 col-lg-12" style="float:left;">
+                <div class="form-group" style="margin-top: -10px;">
+                  <label style="color: red;">*</label><label>施工单位名称:</label>
+                  <input type="text" th:value="${project.projectContractorName}" readonly="readonly" style="width: 30%; background-color: #FFFFCC;" />
+                  <label style="color: red;">*</label><label>项目管理部门:</label>
+                  <input type="text" th:value="${project.leadingOrg}" readonly="readonly" style="width: 30%; background-color: #FFFFCC;" />
+                </div>
+                <div class="form-group" style="margin-top: -10px;">
+                  <label style="color: red;">*</label><label>工&nbsp;&nbsp;程&nbsp;&nbsp;名&nbsp;&nbsp;&nbsp;称:</label>
+                  <input type="text" th:value="${project.projectName}" readonly="readonly" style="width: 30%; background-color: #FFFFCC;" />
+                  <label style="color: red;">*</label><label>工&nbsp;&nbsp;程&nbsp;&nbsp;地&nbsp;&nbsp;&nbsp;点:</label>
+                  <input type="text" th:value="${project.projectLoc}" readonly="readonly" style="width: 30%; background-color: #FFFFCC;" />
+                </div>
+                <div class="form-group" style="margin-top: -10px;">
+                  <label style="color: red;">*</label><label>签&nbsp;&nbsp;证&nbsp;&nbsp;名&nbsp;&nbsp;&nbsp;称:</label>
+                  <input id="visaName" type="text" style="width: 30%;" />
+                </div>
+                <template v-if="visaID == ''">
+                  <table class="table table-bordered visaTable">
+                    <thead>
+                    <tr style="background-color: #eee; border: 1px solid #bbb;">
+                      <th style="width: 30px; border: 1px solid #bbb;">#</th>
+                      <th style="border: 1px solid #bbb;">签证内容</th>
+                      <th style="width: 80px; border: 1px solid #bbb;">单位</th>
+                      <th style="width: 80px; border: 1px solid #bbb;">数量</th>
+                      <th style="border: 1px solid #bbb;">签证原因</th>
+                    </tr>
+                    </thead>
+                    <tbody id="visaTableBody">
+                    <tr>
+                      <td>1</td>
+                      <td contentEditable="plaintext-only" id="visaItemContent1"></td>
+                      <td contentEditable="plaintext-only" id="visaItemUnit1"></td>
+                      <td contentEditable="plaintext-only" id="visaItemQty1"></td>
+                      <td contentEditable="plaintext-only" id="visaItemReason1"></td>
+                    </tr>
+                    </tbody>
+                  </table>
+                  <button class="btn btn-danger btn-sm" onclick="delVisaItem()" style="float: right;"><i class="fa fa-remove"></i> 删除一行</button>
+                  <button class="btn btn-success btn-sm" onclick="addNewVisaItem()" style="float: right; margin-right: 10px;"><i class="fa fa-plus"></i> 追加一行</button>
+                </template>
+                <template v-else="v-else">
+                  <table class="table table-bordered visaTable">
+                    <thead>
+                    <tr style="background-color: #eee; border: 1px solid #bbb;">
+                      <th style="width: 30px; border: 1px solid #bbb;">#</th>
+                      <th style="border: 1px solid #bbb;">签证内容</th>
+                      <th style="width: 80px; border: 1px solid #bbb;">单位</th>
+                      <th style="width: 80px; border: 1px solid #bbb;">数量</th>
+                      <th style="border: 1px solid #bbb;">签证原因</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                  <template v-for="(visaEntry, index) in visaEntryList">
+                      <tr>
+                        <td>{{index+1}}</td>
+                        <td>{{visaEntry.itemContent}}</td>
+                        <td>{{visaEntry.itemUnit}}</td>
+                        <td>{{visaEntry.itemQty}}</td>
+                        <td>{{visaEntry.reason}}</td>
+                      </tr>
+                  </template>
+                    </tbody>
+                  </table>
+                </template>
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="createNewVisa();">保&nbsp;&nbsp;存</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<div th:replace="/modules/bottom::js_library"></div>
+
+<script th:src="@{/plugins/bootstrap-switch/bootstrap-switch.min.js}"></script>
+
+<script th:src="@{/plugins/bootstrap-table/bootstrap-table.min.js}"></script>
+<script th:src="@{/plugins/bootstrap-table/bootstrap-table-zh-CN.min.js}"></script>
+
+<script th:src="@{/js/vue/vue.min.js}"></script>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+
+    var categoryName = [[${categoryName}]];
+    var link;
+    if(categoryName == '工程节点')
+        link = '/project-nodes/show';
+
+    function deleteData(code) {
+        var path = $("#path").val();
+        if(window.confirm("确定删除该记录?")){
+            $.ajax({
+                type: "POST",
+                url: path + "/testdata/delete",
+                data: {code: code},
+                success: function(result) {
+                    var res = eval(result);
+                    alert(res["message"]);
+                    window.location.reload();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            });
+        }
+        return;
+    }
+
+
+    var TableInit = function () {
+        var oTableInit = new Object();
+        //初始化Table
+        oTableInit.Init = function () {
+            $('#dataTable').bootstrapTable({
+                url: $('#path').val()+'/project-visa/load',         //请求后台的URL（*）
+                method: 'get',                      //请求方式（*）
+                toolbar: '#toolbar',                //工具按钮用哪个容器
+                striped: true,                      //是否显示行间隔色
+                cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                pagination: true,                   //是否显示分页（*）
+                uniqueId: 'iD',
+                sortable: true,                     //是否启用排序
+                sortName: 'createDate',
+                sortOrder: "desc",                   //排序方式
+                queryParams: oTableInit.queryParams,//传递参数（*）
+                sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                pageNumber: 1,                       //初始化加载第一页，默认第一页
+                pageSize: 10,                       //每页的记录行数（*）
+                pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+                contentType: "application/x-www-form-urlencoded",
+                strictSearch: true,
+                showColumns: true,                  //是否显示所有的列
+                showRefresh: true,                  //是否显示刷新按钮
+                minimumCountColumns: 2,             //最少允许的列数
+                clickToSelect: true,                //是否启用点击选中行
+//                height: 700,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                uniqueId: "no",                     //每一行的唯一标识，一般为主键列
+//                showToggle: true,                    //是否显示详细视图和列表视图的切换按钮
+                cardView: false,                    //是否显示详细视图
+                detailView: false,                   //是否显示父子表
+                columns: [
+                    {
+                        checkbox: true
+                    }, {
+                        title: '#',
+                        formatter: function (value, row, index) {
+                            return index+1;
+                        }
+                    }, {
+                        title: '操作',
+                        formatter:function(value, row, index){
+                            // return '<a href=\"' + $('#path').val() + link + '?projectID=' + row.iD + '\">查看细节条目</a>'
+                            return '<a href=\"javascript:loadVisaItems('+ "'" + row.visaID + "'" + "," + "'" + row.visaName + "'" + ');\">查看细节条目</a>'
+                        }
+                    }, {
+                        field: 'visaName',
+                        title: '签证名称',
+                        sortable : true,
+                        sortName: 'VISA_NAME'
+                    }, {
+                        field: 'createDate',
+                        title: '创建日期',
+                        sortable : true,
+                        sortName: 'CREATE_DATE'
+                    }, {
+                        field: 'createUserName',
+                        title: '创建人',
+                        sortable : true,
+                        sortName: 'CREATE_USER_NAME'
+                    }, {
+                        // field: 'materialList',
+                        title: '工程签证下载',
+                        formatter:function(value, row, index){
+                            return '<a href=\"' + $('#path').val() + '/files/download/' + row.visaFolderID + '\">下载</a>'
+                        }
+                    }
+                ]
+            });
+
+        };
+
+        //得到查询的参数
+        oTableInit.queryParams = function (params) {
+            var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+                limit: params.limit,   //页面大小
+                offset: params.offset,
+                keyword: params.search,//搜索
+                sort: params.sort,//排序
+                order:params.order//排序字段
+            };
+            return temp;
+        };
+        return oTableInit;
+    };
+
+    var dataTable = new TableInit().Init();
+
+    function deleteItems() {
+        var selectedRows = $('#dataTable').bootstrapTable('getSelections');
+        if(selectedRows == '') {
+            alert('请选择要删除的行');
+            return;
+        }
+        if(window.confirm('确定删除'+selectedRows.length+'条记录?')){
+            var codes = '';
+            for(var i=0; i<selectedRows.length; i++) {
+                codes += selectedRows[i].code+',';
+            }
+            $.ajax({
+                type: 'POST',
+                url: $('#path').val()+'/testdata/deleteItems',
+                data: {codes: codes},
+                success: function(result) {
+                    var res = eval(result);
+                    alert(res['message']);
+                    $('#dataTable').bootstrapTable('refresh');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            });
+        }
+    }
+
+  var visaItemCounter = 1;
+
+  function showVisaModal() {
+      $('#projectVisaModal').modal('show');
+  }
+
+  function createNewVisa() {
+      var visaName = $('#visaName').val().replace(/\s/g,"");
+      if(visaName == null || visaName == '') {
+          alert('签证名不能为空');
+          return;
+      }
+
+      var visaItemContentArray = new Array(visaItemCounter);
+      var visaItemUnitArray = new Array(visaItemCounter);
+      var visaItemQtyArray = new Array(visaItemCounter);
+      var visaItemReasonArray = new Array(visaItemCounter);
+
+      for(var i=1; i<=visaItemCounter; i++) {
+          if($('#visaItemContent'+i).text().replace(/\s/g,"") == null || $('#visaItemContent'+i).text().replace(/\s/g,"") == '') {
+              if(i == 1) {
+                  alert('请填写签证内容');
+                  return;
+              }
+              alert('请删除多余数据行再提交');
+              return;
+          }
+          visaItemContentArray[i-1] = $('#visaItemContent'+i).text().replace(/\s/g,"");
+          visaItemUnitArray[i-1] = $('#visaItemUnit'+i).text();
+          visaItemQtyArray[i-1] = $('#visaItemQty'+i).text();
+          visaItemReasonArray[i-1] = $('#visaItemReason'+i).text();
+      }
+
+      var url = $("#path").val() + '/project-visa/createProjectVisa';
+      $.ajax({
+          type: 'POST',
+          url: url,
+          data: {
+              projectID: [[${projectID}]],
+              visaName: visaName,
+              visaItemContentArray: visaItemContentArray,
+              visaItemUnitArray: visaItemUnitArray,
+              visaItemQtyArray: visaItemQtyArray,
+              visaItemReasonArray: visaItemReasonArray
+          },
+          success: function(result) {
+              var res = JSON.parse(result);
+              alert(res.message);
+              window.location.reload();
+          },
+          error: function (XMLHttpRequest, textStatus, errorThrown) {
+              alert(errorThrown);
+          }
+      });
+
+  }
+
+  function addNewVisaItem() {
+      $('#visaTableBody').append('<tr id="visaItem' + ++visaItemCounter+ '"><td>' + visaItemCounter +'</td><td contentEditable="plaintext-only" id="visaItemContent'+ visaItemCounter +'"></td>'+
+          '<td contentEditable="plaintext-only" id="visaItemUnit' +visaItemCounter+ '"></td><td contentEditable="plaintext-only" id="visaItemQty' +visaItemCounter+ '"></td><td contentEditable="plaintext-only" id="visaItemReason' +visaItemCounter+ '"></td></tr>');
+  }
+  function delVisaItem() {
+      if(visaItemCounter == 1) return;
+      $('#visaItem'+visaItemCounter--).remove();
+  }
+
+  var projectVisaInfo = new Vue({
+      el: '#projectVisaInfo',
+      data: {
+          visaID: '',
+          visaEntryList: []
+      }
+  });
+
+  function loadVisaItems(visaID, visaName) {
+      $('#visaName').val(visaName);
+      projectVisaInfo.visaID = visaID;
+      var url = $("#path").val() + '/project-visa/loadVisaItems';
+      $.ajax({
+          type: 'POST',
+          url: url,
+          data: {
+              visaID: visaID
+          },
+          success: function(result) {
+              var jsonObj = eval(result);
+              if(jsonObj.message == 'success') {
+                  projectVisaInfo.visaEntryList = jsonObj.visaEntryList;
+                  showVisaModal();
+              }
+          },
+          error: function (XMLHttpRequest, textStatus, errorThrown) {
+              alert(errorThrown);
+          }
+      });
+  }
+
+  $('#projectVisaModal').on('hidden.bs.modal', function () {
+      projectVisaInfo.visaID = '';
+      $('#visaName').val('');
+      clearForm($('#projectVisaInfo'));
+  });
+
+  /*]]>*/
+</script>
+
+</body>
+</html>

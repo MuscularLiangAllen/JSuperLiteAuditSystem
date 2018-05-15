@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <title>DeepInsight 审计系统</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
+  <!-- Bootstrap 3.3.6 -->
+  <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}"/>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="http://apps.bdimg.com/libs/fontawesome/4.4.0/css/font-awesome.min.css"/>
+  <!--&lt;!&ndash; Ionicons &ndash;&gt;-->
+  <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css"/>-->
+  <!-- Theme style -->
+  <link rel="stylesheet" th:href="@{/css/lte/AdminLTE.min.css}"/>
+  <!-- iCheck -->
+  <link rel="stylesheet" th:href="@{/plugins/iCheck/square/blue.css}"/>
+
+  <script th:src="@{/js/vue/vue.min.js}"></script>
+
+  <style type="text/css">
+    body {font-family:Microsoft YaHei;}
+  </style>
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width: 460px;">
+  <div class="login-logo">
+    <a href="#"><b>DeepInsight</b>&trade; <span style="font-size: 14px; color: #CC6600;">Powered by LIANG Tianyi&copy;</span> </a>
+    <div style="font-size:20px; margin-top: 10px;">先进的协作审计管理系统</div>
+  </div>
+  <!-- /.login-logo -->
+  <div id="vm" class="login-box-body" style="width: 380px; margin-left: 40px;">
+    <p class="login-box-msg">请输入用户名及密码, 密码区分大小写</p>
+    <input id="path" type="hidden" th:value="@{/auditsys}"></input>
+    <input id="rootpath" type="hidden" th:value="@{/}"></input>
+    <form>
+      <div class="form-group has-feedback">
+        <input id="username" type="email" class="form-control" placeholder="用户名" v-model.trim="username"/>
+        <span class="glyphicon glyphicon-user form-control-feedback"></span>
+      </div>
+      <div class="form-group has-feedback">
+        <input id="passwd" type="password" class="form-control" placeholder="密码" v-model.trim="passwd"/>
+        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+      </div>
+      <div class="row">
+        <div class="col-xs-6">
+          <div class="form-group has-feedback">
+            <input id="inputCaptcha" type="text" class="form-control" placeholder="验证码" v-model.trim="inputCaptcha" v-on:keyup.enter="login"/>
+            <span class="glyphicon glyphicon-qrcode form-control-feedback"></span>
+          </div>
+        </div>
+        <!-- /.col -->
+        <div class="col-xs-6">
+          <!--<a href="javascript:void(0)" onclick="javascript:change();"><img id="captcha" th:src="@{/get/captcha}" alt="验证码" style="border: 1px solid #BBB;"/></a>-->
+          <a href="javascript:void(0)" v-on:click="change"><img id="captcha" th:src="@{/get/captcha}" alt="验证码" style="border: 1px solid #BBB;"/></a>
+        </div>
+        <!-- /.col -->
+      </div>
+      <div class="row" style="margin-top: 10px;">
+        <div class="col-xs-8">
+          <div class="checkbox icheck">
+            <label>
+              <input type="checkbox"/> 记住我的登录信息
+            </label>
+          </div>
+        </div>
+        <!-- /.col -->
+        <div class="col-xs-4">
+          <button type="button" class="btn btn-primary btn-block btn-flat" v-on:click="login">登&nbsp;&nbsp;&nbsp;&nbsp;录</button>
+        </div>
+        <!-- /.col -->
+      </div>
+    </form>
+
+    <a href="#">忘记密码?</a><br/>
+
+  </div>
+  <!-- /.login-box-body -->
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery 2.2.3 -->
+<script th:src="@{/plugins/jQuery/jquery-2.2.3.min.js}"></script>
+<!-- Bootstrap 3.3.6 -->
+<script th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+<!-- iCheck -->
+<script th:src="@{/plugins/iCheck/icheck.min.js}"></script>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+    var vm = new Vue({
+        el: '#vm',
+        data: {
+            username: '',
+            passwd: '',
+            inputCaptcha: '',
+            errorMsg: ''
+        },
+        methods: {
+            change: function () {
+                var url = $("#captcha")[0].src;
+                $("#captcha").attr("src", url +'?' + Math.random());
+            },
+            login: function () {
+                var url = $("#rootpath").val() + "login/validate";
+                var data = "userName="+vm.username+"&passwd="+vm.passwd+"&inputCaptcha="+vm.inputCaptcha;
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: data,
+                    dataType: "json",
+                    success: function(result) {
+                        var res = eval(result);
+                        if(res["message"] == "PASS") {
+                            top.location.href = $("#path").val() + "/dashboard/show";
+                            return;
+                        }
+                        alert(res["message"]);
+                        // vm.username = '';
+                        // vm.passwd = '';
+                        vm.inputCaptcha = '';
+                        vm.change();
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(errorThrown);
+                    }
+                });
+            }
+        }
+    });
+
+  $(function () {
+    $('input').iCheck({
+      checkboxClass: 'icheckbox_square-blue',
+      radioClass: 'iradio_square-blue',
+      increaseArea: '20%' // optional
+    });
+  });
+  /*]]>*/
+</script>
+</body>
+</html>

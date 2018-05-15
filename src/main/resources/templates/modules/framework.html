@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="/modules/header::css_library"></head>
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+<div class="wrapper">
+
+  <!-- The header of page. -->
+  <div th:replace="/modules/top::top"></div>
+
+  <!-- Left side column. contains the logo and sidebar -->
+  <div th:replace="/modules/left-nav::navbar"></div>
+
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+  <iframe id="mainContentFrame" src="/auditsys/dashboard/content" width="100%" height="1000px" frameborder="0" scrolling="no" />
+
+  </div>
+
+  <!-- The footer of page -->
+  <div th:replace="/modules/footer::footer"></div>
+
+  <!-- Control Sidebar -->
+  <div th:replace="/modules/right-config::siderbar"></div>
+  <!-- /.control-sidebar -->
+  <!-- Add the sidebar's background. This div must be placed
+       immediately after the control sidebar -->
+  <div class="control-sidebar-bg"></div>
+
+</div>
+<!-- ./wrapper -->
+
+<div th:replace="/modules/bottom::js_library"></div>
+
+<script th:inline="javascript">
+
+    $("#example-basic-expandable").treetable({ expandable: true });
+
+    // Highlight selected row
+    $("#example-basic-expandable tbody").on("mousedown", "tr", function() {
+        $(".selected").not(this).removeClass("selected");
+        $(this).toggleClass("selected");
+    });
+    
+    function loadUserInfo(userID) {
+
+        var username = $("#username"+userID).text();
+        var userorg = $("#userorg"+userID).val();
+        var userphone = $("#userphone"+userID).text();
+        var usermail = $("#usermail"+userID).text();
+        var passwd = $("#userpasswd"+userID).val();
+
+        $("#u-username").html(username);
+        $("#user-org").html(userorg);
+        $("#u-passwd").val(passwd);
+        $("#re-u-passwd").val(passwd);
+        $("#user-phone").val(userphone);
+        $("#u-email").val(usermail);
+
+    }
+
+
+    function showAddModal(parentOrgID) {
+        $("#addSubOrgModal").modal("show");
+        $("#parentOrgID").val(parentOrgID);
+    }
+
+    function addNewOrg() {
+        var path = $("#path").val();
+        var parentOrgID = $("#parentOrgID").val();
+        var orgname = $("#n-orgname").val().replace(/\s/g,"");
+        var orgtypeID = $("#n-orgtype").val();
+        var orgtel = $("#n-orgtel").val().replace(/\s/g,"");
+        var orgloc = $("#n-orgloc").val().replace(/\s/g,"");
+        var orgdesc = $("#n-orgdesc").val().replace(/\s/g,"");
+
+        if(orgname == "") {
+            alert("组织机构名称不能为空!");
+            return;
+        }
+        if(orgtypeID == -100) {
+            alert("请选择组织机构类型");
+            return;
+        }
+        if(orgtel == "") {
+            alert("组织机构电话不能为空!");
+            return;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: path + "/org/add",
+            data: {parentOrgID: parentOrgID, orgname: orgname, orgtypeID: orgtypeID, orgtel: orgtel, orgloc: orgloc, orgdesc: orgdesc},
+            success: function(result) {
+                var res = eval(result)
+                alert(res["message"]);
+                location.reload();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(errorThrown);
+            }
+        });
+    }
+
+    function deleteOrg(orgID) {
+        var path = $("#path").val();
+        if(window.confirm("确定删除该组织机构及其附属所有机构?")){
+
+            $.ajax({
+                type: "POST",
+                url: path + "/org/delete",
+                data: {orgID: orgID},
+                success: function(result) {
+                    var res = eval(result)
+                    alert(res["message"]);
+                    location.reload();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            });
+        }
+        return;
+    }
+</script>
+
+</body>
+</html>

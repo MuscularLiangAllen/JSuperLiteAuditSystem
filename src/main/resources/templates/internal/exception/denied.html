@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}"/>
+</head>
+<body>
+<div class="modal modal-warning fade" id="modal-warning">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">系统信息</h4>
+      </div>
+      <div class="modal-body">
+        <p>模块拒绝访问: 权限不足</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-dismiss="modal">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- jQuery 2.2.3 -->
+<script th:src="@{/plugins/jQuery/jquery-2.2.3.min.js}"></script>
+<!-- Bootstrap 3.3.6 -->
+<script th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+      $('#modal-warning').modal('show');
+  });
+
+  function redirect() {
+      parent.location.href = '/auditsys/dashboard/show';
+  }
+  
+  $('#modal-warning').on('hidden.bs.modal', function () {
+      redirect();
+  });
+</script>
+
+</body>
+</html>

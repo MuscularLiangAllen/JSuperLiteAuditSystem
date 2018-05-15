@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="/modules/header::css_library"></head>
+
+<div th:replace="/modules/bottom::js_library"></div>
+
+<script th:src="@{/plugins/fineuploader/fine-uploader.core.min.js}"></script>
+<script th:src="@{/plugins/fineuploader/fine-uploader.min.js}"></script>
+
+<style type="text/css">
+  @media (max-width: 1667px) {
+    .table-responsive {
+      width: 100%;
+      margin-bottom: 15px;
+      overflow-x: scroll;
+      overflow-y: hidden;
+      border: 1px solid #dddddd;
+      -ms-overflow-style: -ms-autohiding-scrollbar;
+      -webkit-overflow-scrolling: touch;
+    }
+    .table-responsive > .table {
+      margin-bottom: 0;
+    }
+    .table-responsive > .table > thead > tr > th,
+    .table-responsive > .table > tbody > tr > th,
+    .table-responsive > .table > tfoot > tr > th,
+    .table-responsive > .table > thead > tr > td,
+    .table-responsive > .table > tbody > tr > td,
+    .table-responsive > .table > tfoot > tr > td {
+      white-space: nowrap;
+    }
+</style>
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+    <!-- Content Header (Page header) -->
+    <section id="vsearch" class="content-header" style="border: 0px solid red; height: 50px; padding-top: 0px;">
+      <div class="row" style="padding-top: 10px; padding-bottom: 0px;">
+        <div class="col-lg-10 col-md-10">
+          <div class="col-lg-9 col-md-9">
+            <h3 style="font-family: 'Microsoft YaHei'; margin-top: 5px;">
+              业务管理
+              <small>Process Management</small>
+            </h3>
+          </div>
+          <div class="col-lg-3 col-md-3">
+            <div class="input-group" style="float: right; margin-top: 5px;">
+              <input id="keyword" type="text" class="form-control" v-model="keyword" v-on:keyup.enter="search"/>
+              <span class="input-group-btn">
+						<button class="btn btn-default" type="button" v-on:click="search">
+							搜索
+						</button>
+					</span>
+            </div>
+          </div>
+          <script>
+          </script>
+        </div>
+        <div class="col-lg-2 col-md-2">
+          <ol class="breadcrumb" style="background-color: #FFF; border: 0px solid green;">
+            <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
+            <li class="active">业务列表</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <input id="rootpath" type="hidden" th:value="@{/}"></input>
+      <input id="path" type="hidden" th:value="@{/auditsys}"></input>
+      <input id="totalCounts" type="hidden" th:value="${totalCounts}"></input>
+      <input id="create" type="hidden" th:value="${create}"></input>
+
+      <!-- Small boxes (Stat box) -->
+      <!-- /.row -->
+      <!-- Main row -->
+      <div class="row">
+        <!-- Left col -->
+        <section class="col-lg-12 connectedSortable">
+
+          <div class="box box-primary">
+            <div class="box-header">
+              <i class="ion ion-clipboard"></i>
+
+              <h3 class="box-title" style="font-family: 'Microsoft YaHei'; ">项目列表</h3>
+
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body table-responsive">
+              <table id="example-basic-expandable" class="table table-hover table-bordered">
+                <tbody>
+                  <thead>
+                    <tr style="background-color: #EEE;">
+                      <th>#</th>
+                      <th>操作</th>
+                      <th>项目名称</th>
+                      <th>状态</th>
+                      <th>地址</th>
+                      <th>预计开/竣工日期</th>
+                      <th>实际开/竣工日期</th>
+                      <th>工期(天)</th>
+                      <th>项目目的</th>
+                      <th>主要内容</th>
+                      <th>施工主要材料</th>
+                    </tr>
+                  </thead>
+                  <th:block th:each="project, status : ${projectList}">
+                    <tr>
+                      <td style="vertical-align: middle; horiz-align: center;" th:text="${status.count}"></td>
+                      <td style="vertical-align: middle; horiz-align: center;">
+                        <!--<a href="javascript:void(0);" th:onclick="'javascript:deleteProject(\''+${project.ID}+'\');'">删除</a><br></br>-->
+                        <!--<a href="javascript:void(0);" th:onclick="'javascript:showProcess(\''+${project.ID}+'\');'">修改</a><br></br>-->
+                        <a th:href="${'/auditsys/audits/process/'+ project.ID}">进入</a></td>
+                      <td style="vertical-align: middle; horiz-align: center;"><th:block th:text="${project.projectName}"></th:block></td>
+                      <td style="vertical-align: middle; horiz-align: center; color: #00B83F;">施工中</td>
+                      <td style="vertical-align: middle; horiz-align: center;"><th:block th:text="${project.projectLoc}"></th:block></td>
+                      <td style="vertical-align: middle; horiz-align: center;"><span style="color: #00B83F;"><th:block th:text="${project.expectedStartDate}"></th:block></span><br></br>
+                        <span style="color: #f56954;"><th:block th:text="${project.expectedEndDate}"></th:block></span></td>
+                      <td style="vertical-align: middle; horiz-align: center;"><span style="color: #00B83F;"><th:block th:text="${project.startDate}"></th:block></span><br></br>
+                        <span style="color: #f56954;"><th:block th:text="${project.endDate}"></th:block></span></td>
+                      <td style="vertical-align: middle; text-align:center;"><th:block th:text="${project.projectDuration}"></th:block></td>
+                      <td style="vertical-align: middle; horiz-align: center;"><th:block th:text="${project.projectObjectives}"></th:block></td>
+                      <td style="vertical-align: middle; horiz-align: center;"><th:block th:text="${project.projectMainContent}"></th:block></td>
+                      <td></td>
+                    </tr>
+
+                  </th:block>
+
+                </tbody>
+
+              </table>
+              <hr style="border-color: #CCCCCC;"/>
+              <button type="submit" class="btn btn-success pull-left" onclick="showAddModal()">添加新项目</button>
+              <div class="box-tools pull-right" style="margin-right: 10px;">
+                <ul id="pageList" class="pagination pagination-sm inline">
+                  <!--<li><a href="#">&laquo;</a></li>-->
+                  <!--<li><a href="#">1</a></li>-->
+                  <!--<li><a href="#">2</a></li>-->
+                  <!--<li><a href="#">3</a></li>-->
+                  <!--<li><a href="#">&raquo;</a></li>-->
+                </ul>
+              </div>
+              <script th:inline="javascript">
+                  $('#pageList').jqPaginator({
+                      pageSize: 10,
+                      totalCounts: [[${totalCounts}]],
+                      visiblePages: 10,
+                      currentPage: 1,
+
+                      first: '<li class="first"><a href="javascript:void(0);">首页</a></li>',
+                      prev: '<li class="prev"><a href="javascript:void(0);">向前</a></li>',
+                      next: '<li class="next"><a href="javascript:void(0);">向后</a></li>',
+                      last: '<li class="last"><a href="javascript:void(0);">末页</a></li>',
+                      page: '<li class="page"><a href="javascript:void(0);">{{page}}</a></li>',
+                      onPageChange: function (page) {
+                          $.get("/auditsys/projects/show?pageNumber="+page);
+                      }
+                  });
+              </script>
+            </div>
+
+            <div id="vsearchTable" class="box-body table-responsive" style="display: none;">
+              <table id="example-basic-expandable2" class="table table-hover ">
+                <tbody>
+                <thead>
+                <tr style="background-color: #EEE;">
+                  <th>文件名称</th>
+                  <th>类型</th>
+                  <th>大小</th>
+                  <th>描述</th>
+                  <th>创建者</th>
+                  <th>创建日期</th>
+                  <th>操作</th>
+                </tr>
+                </thead>
+
+                <tr style="display: none;">
+                  <td><i class="fa fa-folder-open"></i> xxx</td>
+                  <td>xxx</td>
+                  <td>xxx</td>
+                  <td>xxx</td>
+                  <td>xxx</td>
+                  <td>xxx</td>
+                  <td>
+                    <a href="#">修改</a> / <a href="javascript:void(0);">删除</a> / <a>下载</a></td>
+                </tr>
+
+                <template v-for="file in fileList">
+                  <tr v-bind:data-tt-id="file.uUID" v-bind:data-tt-parent-id="file.parentFolder">
+                  <td><i class="fa fa-folder-open"></i> {{file.fileName}}</td>
+                  <td>{{file.fileType}}</td>
+                  <td v-if="file.isFolder === 1"></td>
+                  <td v-if="file.isFolder === 0">
+                    <template v-if="file.fileSize &lt; 1024">
+                      {{(file.fileSize/1024).toFixed(0) + 'KB'}}
+                    </template>
+                    <template v-if="file.fileSize > 1024">
+                    {{(file.fileSize/1024).toFixed(0) + 'KB'}}
+                    </template>
+                    <template v-if="file.fileSize > 1024*1024">
+                      {{(file.fileSize/1024).toFixed(0) + 'KB'}}
+                    </template>
+                  </td>
+                  <td>{{file.fileDesc}}</td>
+                  <td>{{file.submitterName}}</td>
+                  <td>{{file.subDate}}</td>
+                  <td><a href="#">修改</a> / <a href="javascript:void(0);">删除</a> / <a v-bind:href="'/auditsys/files/download/'+file.uUID">下载</a></td>
+                  </tr>
+                </template>
+
+                </tbody>
+
+              </table>
+              <hr style="border-color: #CCCCCC;"/>
+
+              <script th:inline="javascript">
+                  $('#pageList').jqPaginator({
+                      pageSize: 10,
+                      totalCounts: [[${totalCounts}]],
+                      visiblePages: 10,
+                      currentPage: 1,
+
+                      first: '<li class="first"><a href="javascript:void(0);">首页</a></li>',
+                      prev: '<li class="prev"><a href="javascript:void(0);">向前</a></li>',
+                      next: '<li class="next"><a href="javascript:void(0);">向后</a></li>',
+                      last: '<li class="last"><a href="javascript:void(0);">末页</a></li>',
+                      page: '<li class="page"><a href="javascript:void(0);">{{page}}</a></li>',
+                      onPageChange: function (page) {
+                          $.get("/auditsys/files/show?pageNumber="+page);
+                      }
+                  });
+              </script>
+            </div>
+
+            <!-- /.box-body -->
+
+          </div>
+          <!-- /.box -->
+
+        </section>
+        <!-- /.Left col -->
+        <!-- right col (We are only adding the ID to make the widgets sortable)-->
+
+        <!-- right col -->
+      </div>
+      <!-- /.row (main row) -->
+
+    </section>
+
+  <!-- Modal -->
+
+
+  <!-- ACL Modal -->
+<div th:replace="/modules/orgACL::zTreeList"></div>
+
+<script th:src="@{/plugins/JQueryZtree/jquery.ztree.core.min.js}"></script>
+<script th:src="@{/plugins/JQueryZtree/jquery.ztree.excheck.min.js}"></script>
+
+<script th:src="@{/js/vue/vue.min.js}"></script>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+
+  $("#example-basic-expandable").treetable({ expandable: true });
+
+  // Highlight selected row
+  $("#example-basic-expandable tbody").on("mousedown", "tr", function() {
+      $(".selected").not(this).removeClass("selected");
+      $(this).toggleClass("selected");
+  });
+
+  var vsearchTable = new Vue({
+      el: '#vsearchTable',
+      data: {
+          fileList: ''
+      },
+      updated: function () {
+          $('#vsearchTable').show();
+      }
+  });
+
+  var vsearch = new Vue({
+      el: '#vsearch',
+      data: {
+          keyword: '',
+      },
+      watch: {
+        keyword: function(val, oldVal) {
+            if (val == "") {
+                $('#vsearchTable').hide();
+            }
+        }
+      },
+      methods: {
+          search: function () {
+              var path = $("#path").val();
+              var url = path + '/files/search';
+              $.ajax({
+                  type: 'POST',
+                  url: url,
+                  data: {keyword: this.keyword},
+                  success: function(result) {
+                      var res = eval(result);
+                      vsearchTable.fileList = res;
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          }
+      }
+  });
+
+  $("#example-basic-expandable2").treetable({
+      expandable: true,
+      initialState: 'expanded'
+  });
+
+  // Highlight selected row
+  $("#example-basic-expandable2 tbody").on("mousedown", "tr", function() {
+      $(".selected").not(this).removeClass("selected");
+      $(this).toggleClass("selected");
+  });
+
+
+  /*]]>*/
+</script>
+
+</body>
+</html>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="/modules/header::css_library"></head>
+
+<div th:replace="/modules/bottom::js_library"></div>
+
+<script th:src="@{/plugins/fineuploader/fine-uploader.core.min.js}"></script>
+<script th:src="@{/plugins/fineuploader/fine-uploader.min.js}"></script>
+
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+    <!-- Content Header (Page header) -->
+    <section id="vsearch" class="content-header" style="border: 0px solid red; height: 50px; padding-top: 0px;">
+      <div class="row" style="padding-top: 10px; padding-bottom: 0px;">
+        <div class="col-lg-10 col-md-10">
+          <div class="col-lg-9 col-md-9">
+            <h3 style="font-family: 'Microsoft YaHei'; margin-top: 5px;">
+              文件管理
+              <small>File Management</small>
+            </h3>
+          </div>
+          <div class="col-lg-3 col-md-3">
+            <div class="input-group" style="float: right; margin-top: 5px;">
+              <input id="keyword" type="text" class="form-control" v-model="keyword" v-on:keyup.enter="search"/>
+              <span class="input-group-btn">
+						<button class="btn btn-default" type="button" v-on:click="search">
+							搜索
+						</button>
+					</span>
+            </div>
+          </div>
+          <script>
+          </script>
+        </div>
+        <div class="col-lg-2 col-md-2">
+          <ol class="breadcrumb" style="background-color: #FFF; border: 0px solid green;">
+            <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
+            <li class="active">文件管理</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <input id="rootpath" type="hidden" th:value="@{/}"></input>
+      <input id="path" type="hidden" th:value="@{/auditsys}"></input>
+      <input id="totalCounts" type="hidden" th:value="${totalCounts}"></input>
+      <!-- Small boxes (Stat box) -->
+      <!-- /.row -->
+      <!-- Main row -->
+      <div class="row">
+        <!-- Left col -->
+        <section class="col-lg-10 connectedSortable">
+
+          <div class="box box-primary">
+            <div class="box-header">
+              <i class="ion ion-clipboard"></i>
+              <h3 class="box-title" style="font-family: 'Microsoft YaHei'; ">文件列表</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body table-responsive">
+              <table id="example-basic-expandable" class="table table-hover ">
+                <tbody>
+                  <thead>
+                    <tr style="background-color: #EEE;">
+                      <th>文件名称</th>
+                      <th>类型</th>
+                      <th>大小</th>
+                      <th>描述</th>
+                      <th>创建者</th>
+                      <th>创建日期</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <th:block th:each="file, status : ${fileInfoList}">
+
+                    <th:block th:if="${file.isFolder == 1}">
+                      <tr th:attr="data-tt-id=${file.UUID}, data-tt-parent-id=${file.parentFolder}">
+                        <td><i class="fa fa-folder-open"></i> <th:block th:text="${file.fileName}"></th:block></td>
+                        <td th:text="${file.fileType}">DOC</td>
+                        <td></td>
+                        <td th:text="${file.fileDesc}">申请信息</td>
+                        <td th:text="${file.submitterName}">admin</td>
+                        <td th:text="${file.subDate}">2017/5/11</td>
+                        <td><a href="javascript:void(0);" th:id="${file.UUID}" onclick="showAddModal(this.id)">添加</a> /
+                          <a href="javascript:void(0);" th:onclick="'javascript:loadFileInfo(\''+${file.UUID}+'\');'">修改</a> / <a href="javascript:void(0);" th:onclick="'javascript:deleteFileByID(\''+${file.UUID}+'\');'">删除</a> / <a th:href="${'/auditsys/files/download/'+file.UUID}">下载</a></td>
+                      </tr>
+                    </th:block>
+                    <th:block th:if="${file.isFolder == 0}">
+                      <tr th:attr="data-tt-id=${file.UUID}, data-tt-parent-id=${file.parentFolder}">
+                        <td><i class="fa fa-file-text-o"></i> <th:block th:text="${file.fileName}"></th:block></td>
+                        <td th:text="${file.fileType}">DOC</td>
+                        <th:block th:if="${file.isFolder == 0}">
+                          <th:block th:if="${file.fileSize lt 1048576}">
+                            <td th:text="${file.fileSize / 1024 + 'KB'}">108KB</td>
+                          </th:block>
+                          <th:block th:if="${file.fileSize > 1024*1024}">
+                            <td th:text="${file.fileSize / 1048576 + 'MB'}">108KB</td>
+                          </th:block>
+                        </th:block>
+                        <td th:text="${file.fileDesc}">申请信息</td>
+                        <td th:text="${file.submitterName}">admin</td>
+                        <td th:text="${file.subDate}">2017/5/11</td>
+                        <td><a href="javascript:void(0);" th:onclick="'javascript:loadFileInfo(\''+${file.UUID}+'\');'">修改</a> / <a href="javascript:void(0);" th:onclick="'javascript:deleteFileByID(\''+${file.UUID}+'\');'">删除</a> / <a th:href="${'/auditsys/files/download/'+file.UUID}">下载</a></td>
+                      </tr>
+                    </th:block>
+                  </th:block>
+
+                </tbody>
+
+              </table>
+              <hr style="border-color: #CCCCCC;"/>
+              <button type="submit" class="btn btn-success pull-left" onclick="showAddModal('root')">添加顶级文件夹</button>
+              <div class="box-tools pull-right" style="margin-right: 10px;">
+                <ul id="pageList" class="pagination pagination-sm inline">
+                  <!--<li><a href="#">&laquo;</a></li>-->
+                  <!--<li><a href="#">1</a></li>-->
+                  <!--<li><a href="#">2</a></li>-->
+                  <!--<li><a href="#">3</a></li>-->
+                  <!--<li><a href="#">&raquo;</a></li>-->
+                </ul>
+              </div>
+              <script th:inline="javascript">
+                  $('#pageList').jqPaginator({
+                      pageSize: 10,
+                      totalCounts: [[${totalCounts}]],
+                      visiblePages: 10,
+                      currentPage: [[${currentPage}]],
+
+                      first: '<li class="first"><a href="javascript:void(0);">首页</a></li>',
+                      prev: '<li class="prev"><a href="javascript:void(0);">向前</a></li>',
+                      next: '<li class="next"><a href="javascript:void(0);">向后</a></li>',
+                      last: '<li class="last"><a href="javascript:void(0);">末页</a></li>',
+                      page: '<li class="page"><a href="javascript:void(0);">{{page}}</a></li>',
+                      onPageChange: function (page, type) {
+//                          $.get("/auditsys/files/show?pageNumber="+page);
+                          if(type == "init") return;
+                          $('#mainContentFrame', parent.document).attr('src', '/auditsys/files/show?pageNumber='+page);
+                      }
+                  });
+              </script>
+            </div>
+
+            <div id="vsearchTable" class="box-body table-responsive" style="display: none;">
+              <table id="example-basic-expandable2" class="table table-hover ">
+                <tbody>
+                <thead>
+                <tr style="background-color: #EEE;">
+                  <th>文件名称</th>
+                  <th>类型</th>
+                  <th>大小</th>
+                  <th>描述</th>
+                  <th>创建者</th>
+                  <th>创建日期</th>
+                  <th>操作</th>
+                </tr>
+                </thead>
+
+                <tr style="display: none;">
+                  <td><i class="fa fa-folder-open"></i> xxx</td>
+                  <td>xxx</td>
+                  <td>xxx</td>
+                  <td>xxx</td>
+                  <td>xxx</td>
+                  <td>xxx</td>
+                  <td>
+                    <a href="#">修改</a> / <a href="javascript:void(0);">删除</a> / <a>下载</a></td>
+                </tr>
+
+
+                <template v-for="file in fileList">
+                  <tr v-bind:data-tt-id="file.uUID" v-bind:data-tt-parent-id="file.parentFolder">
+                  <td><i class="fa fa-folder-open"></i> {{file.fileName}}</td>
+                  <td>{{file.fileType}}</td>
+                  <td v-if="file.isFolder === 1"></td>
+                  <td v-if="file.isFolder === 0">
+                    <template v-if="file.fileSize &lt; 1024">
+                      {{(file.fileSize/1024).toFixed(0) + 'KB'}}
+                    </template>
+                    <template v-if="file.fileSize > 1024">
+                    {{(file.fileSize/1024).toFixed(0) + 'KB'}}
+                    </template>
+                    <template v-if="file.fileSize > 1024*1024">
+                      {{(file.fileSize/1024).toFixed(0) + 'KB'}}
+                    </template>
+                  </td>
+                  <td>{{file.fileDesc}}</td>
+                  <td>{{file.submitterName}}</td>
+                  <td>{{file.subDate}}</td>
+                  <td><a href="#">修改</a> / <a href="#">删除</a> / <a v-bind:href="'/auditsys/files/download/'+file.uUID">下载</a></td>
+                  </tr>
+                </template>
+
+                </tbody>
+
+              </table>
+              <hr style="border-color: #CCCCCC;"/>
+              <!--<button type="submit" class="btn btn-success pull-left" onclick="showAddModal('root')">添加顶级文件夹</button>-->
+              <!--<div class="box-tools pull-right" style="margin-right: 10px;">-->
+                <!--<ul id="pageList" class="pagination pagination-sm inline">-->
+                  <!--&lt;!&ndash;<li><a href="#">&laquo;</a></li>&ndash;&gt;-->
+                  <!--&lt;!&ndash;<li><a href="#">1</a></li>&ndash;&gt;-->
+                  <!--&lt;!&ndash;<li><a href="#">2</a></li>&ndash;&gt;-->
+                  <!--&lt;!&ndash;<li><a href="#">3</a></li>&ndash;&gt;-->
+                  <!--&lt;!&ndash;<li><a href="#">&raquo;</a></li>&ndash;&gt;-->
+                <!--</ul>-->
+              <!--</div>-->
+              <!--<script th:inline="javascript">-->
+                  <!--$('#pageList').jqPaginator({-->
+                      <!--pageSize: 10,-->
+                      <!--totalCounts: [[${totalCounts}]],-->
+                      <!--visiblePages: 10,-->
+                      <!--currentPage: 1,-->
+
+                      <!--first: '<li class="first"><a href="javascript:void(0);">首页</a></li>',-->
+                      <!--prev: '<li class="prev"><a href="javascript:void(0);">向前</a></li>',-->
+                      <!--next: '<li class="next"><a href="javascript:void(0);">向后</a></li>',-->
+                      <!--last: '<li class="last"><a href="javascript:void(0);">末页</a></li>',-->
+                      <!--page: '<li class="page"><a href="javascript:void(0);">{{page}}</a></li>',-->
+                      <!--onPageChange: function (page) {-->
+                          <!--$.get("/auditsys/files/show?pageNumber="+page);-->
+                      <!--}-->
+                  <!--});-->
+              <!--</script>-->
+            </div>
+
+
+            <!-- /.box-body -->
+
+          </div>
+          <!-- /.box -->
+
+        </section>
+        <!-- /.Left col -->
+        <!-- right col (We are only adding the ID to make the widgets sortable)-->
+
+        <!-- right col -->
+      </div>
+      <!-- /.row (main row) -->
+
+    </section>
+
+  <!-- Modal -->
+  <div class="modal fade" id="addFileModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div id="fileInfo" class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <template v-if="fileID == ''">
+            <h4 class="modal-title" style="font-family: 'Microsoft YaHei';">新建文件</h4>
+          </template>
+          <template v-else="v-else">
+            <h4 class="modal-title" style="font-family: 'Microsoft YaHei';">修改文件</h4>
+          </template>
+        </div>
+        <div class="modal-body" style="text-align: left;">
+          <div class="row" style="margin-left:auto; margin-right:auto; width: 80%; ">
+            <div class="col-sm-12 col-md-12" style="float:left;">
+              <form id="vform">
+                <input type="hidden" id="parentFolderID" />
+                <input type="hidden" id="tmpFileID"/>
+                <!--<input type="hidden" id="fileID"/>-->
+                <div class="form-group" style="margin-top: -6px;">
+                  <label style="color: red;">*</label><label>文件名称:</label>
+                  <input id="n-filename" v-model="fileName" name="fileName" type="text"  style="width: 80%;"></input><br></br>
+                </div>
+                <!--<template v-if="fileID == ''">-->
+                <div id="fileTypeZone">
+                  <div class="form-group" style="margin-top: -10px;">
+                    <label style="color: red;">*</label><label>文件类型:</label>
+                    <input type="radio" name="fileType" checked="checked" value="folder" onclick="javascript:$('#fileUploadZone').hide('normal');"/>文件夹
+                    <input type="radio" name="fileType" value="file" onclick="javascript:$('#fileUploadZone').show('normal');"/>文件
+                  </div>
+                  <div id="fileUploadZone" class="form-group" style="margin-top: -5px; display: none;">
+                    <div id="fine-uploader">
+                    </div>
+                    <script type="text/template" id="qq-template">
+                      <div class="qq-uploader-selector qq-uploader">
+                        <div class="qq-upload-button-selector qq-upload-button">
+                          <div>上传附件</div>
+                        </div>
+                        <ul class="qq-upload-list-selector qq-upload-list">
+                          <li>
+                            <div class="qq-progress-bar-container-selector">
+                              <div class="qq-progress-bar-selector qq-progress-bar"></div>
+                            </div>
+                            <span class="qq-upload-spinner-selector qq-upload-spinner"></span>
+                            <span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>
+                            <span class="qq-upload-file-selector qq-upload-file" style="max-width: 250px;"></span>
+                            <span class="qq-upload-size-selector qq-upload-size"></span>
+                            <a class="qq-upload-cancel-selector qq-upload-cancel" href="#">放弃上传</a>
+                            <a class="qq-upload-retry-selector qq-upload-retry" href="#">重试</a>
+                            <a class="qq-upload-delete-selector qq-upload-delete" href="#">删除</a>
+                            <span class="qq-upload-status-text-selector qq-upload-status-text"></span>
+                          </li>
+                        </ul>
+                      </div>
+                    </script>
+                  </div>
+                </div>
+                <!--</template>-->
+
+                <div class="form-group" style="margin-top: -10px;">
+                  <label style="color: red;">*</label><label>权限列表:</label>
+                  <button type="button" class="btn btn-success"  onclick="showACLModal();">添加可访问用户</button>
+                  <div style="color: #009900; margin-top: 5px;" id="ACLNames"></div>
+                </div>
+                <div class="form-group" style="margin-top: -5px; margin-left: 5px;">
+                  <label>描&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;述:</label>
+                  <input id="n-filedesc" v-model="fileDesc" name="filedesc" type="text" style="width: 80%;"></input><br></br>
+                </div>
+              </form>
+
+              <span style="color: red;">*项为必填项目</span>
+
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <template v-if="fileID == ''">
+            <button type="button" class="btn btn-primary" v-on:click="add">保&nbsp;&nbsp;存</button>
+          </template>
+          <template v-if="fileID != ''">
+            <button type="button" class="btn btn-primary" v-on:click="update">修&nbsp;&nbsp;改</button>
+          </template>
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACL Modal -->
+  <div th:replace="/modules/ACL::zTreeList"></div>
+
+<script th:src="@{/plugins/JQueryZtree/jquery.ztree.core.min.js}"></script>
+<script th:src="@{/plugins/JQueryZtree/jquery.ztree.excheck.min.js}"></script>
+
+<script th:src="@{/js/vue/vue.min.js}"></script>
+
+
+<script th:inline="javascript">
+
+    $("#example-basic-expandable").treetable({
+        expandable: true,
+        initialState: 'expanded'
+    });
+
+    // Highlight selected row
+    $("#example-basic-expandable tbody").on("mousedown", "tr", function() {
+        $(".selected").not(this).removeClass("selected");
+        $(this).toggleClass("selected");
+    });
+
+</script>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  function showAddModal(parentFolderID) {
+      $("#addFileModal").modal("show");
+      $("#parentFolderID").val(parentFolderID);
+  }
+
+  jQuery.validator.setDefaults({
+      debug: true,
+      success: "valid"
+  });
+
+  var fileInfo = new Vue({
+      el: '#fileInfo',
+      data: {
+          fileID: '',
+          fileName: '',
+          fileType: '',
+          fileDesc: ''
+      },
+      watch: {
+          fileID: function(val, oldVal) {
+              if (val == '') {
+                  $('#fileTypeZone').show();
+              }
+              if (val != '') {
+                  $('#fileTypeZone').hide();
+              }
+          }
+      },
+      methods: {
+          validate: function () {
+              var errorSymbol = "<span style='color: red; font-size: 18px;'>&nbsp;x</span>";
+              var vform = $("#vform");
+              vform.validate({
+                  rules: {
+                      fileName: {
+                          required: true,
+                          minlength: 4
+                      }
+                  },
+                  messages: {
+                      fileName: {
+                          required: errorSymbol,
+                          minlength: "<span style='color: red; font-size: 14px;'>&nbsp;文件名长度不能少于4个字符</span>"
+                      }
+                  }
+              });
+              return vform;
+          },
+          add: function () {
+              if(this.validate().valid() == false) {
+                  alert('数据项录入有误, 请按照提示修改');
+                  return;
+              }
+              var url = $('#path').val() + '/files/add'
+              var parentfolderID = $("#parentFolderID").val();
+              var filetype = $('input:radio[name="fileType"]:checked').val();
+              var grantedusers = $("#selectedIDs").val();
+              var tmpFileID = $("#tmpFileID").val();
+
+              if(filetype == 'file' && tmpFileID == '') {
+                  alert('请上传文件');
+                  return;
+              }
+              if(grantedusers == '') {
+                  alert('请选择可访问用户');
+                  return;
+              }
+
+              $.ajax({
+                  type: "POST",
+                  url: url,
+                  data: {filename: this.fileName, filetype: filetype, filedesc: this.fileDesc, parentfolderID: parentfolderID,
+                      grantedusers: grantedusers, tmpFileID:tmpFileID},
+                  success: function(result) {
+                      var res =  eval("("+result+")");
+                      alert(res["message"]);
+                      window.location.reload();
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          },
+          update: function () {
+              if(this.validate().valid() == false) {
+                  alert('数据项录入有误, 请按照提示修改');
+                  return;
+              }
+              var url = $('#path').val() + '/files/update'
+              var grantedusers = $("#selectedIDs").val();
+
+              if(grantedusers == '') {
+                  alert('请选择可访问用户');
+                  return;
+              }
+
+              $.ajax({
+                  type: "POST",
+                  url: url,
+                  data: {fileID: this.fileID, filename: this.fileName, filedesc: this.fileDesc, grantedusers: grantedusers},
+                  success: function(result) {
+                      var res =  eval("("+result+")");
+                      alert(res["message"]);
+                      window.location.reload();
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          },
+          clear: function () {
+              this.fileID = '';
+              this.fileName = '';
+              this.fileDesc = '';
+          }
+      }
+  });
+
+  function loadFileInfo(fileID) {
+      var path = $("#path").val();
+      $.ajax({
+          type: "POST",
+          url: path + "/files/get",
+          data: {fileID: fileID},
+          success: function(result) {
+              var file =  eval("("+result+")");
+              fileInfo.fileID = file.uUID;
+              fileInfo.fileName = file.fileName;
+              fileInfo.fileDesc = file.fileDesc
+              showAddModal(file.parentFolder);
+          },
+          error: function (XMLHttpRequest, textStatus, errorThrown) {
+              alert(errorThrown);
+          }
+      });
+  }
+
+  function deleteFileByID(fileID) {
+      var path = $("#path").val();
+      if(window.confirm("确定删除该文件?")){
+          $.ajax({
+              type: "POST",
+              url: path + "/files/delete",
+              data: {fileID: fileID},
+              success: function(result) {
+                  var res = eval(result)
+                  alert(res["message"]);
+                  window.location.reload();
+              },
+              error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  alert(errorThrown);
+              }
+          });
+      }
+      return;
+  }
+
+  function saveACL(){
+      $("#ACLNames").html("可访问用户: "+$("#selectedNames").val());
+      $('#ACLModal').modal('hide')
+      return;
+  }
+
+  var vsearchTable = new Vue({
+      el: '#vsearchTable',
+      data: {
+          fileList: ''
+      },
+      updated: function () {
+          $('#vsearchTable').show();
+      }
+  });
+
+  var vsearch = new Vue({
+      el: '#vsearch',
+      data: {
+          keyword: '',
+      },
+      watch: {
+        keyword: function(val, oldVal) {
+            if (val == "") {
+                $('#vsearchTable').hide();
+            }
+        }
+      },
+      methods: {
+          search: function () {
+              var path = $("#path").val();
+              var url = path + '/files/search';
+              $.ajax({
+                  type: 'POST',
+                  url: url,
+                  data: {keyword: this.keyword},
+                  success: function(result) {
+                      var res = eval(result);
+                      vsearchTable.fileList = res;
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          }
+      }
+  });
+
+  $("#example-basic-expandable2").treetable({ expandable: true });
+
+  // Highlight selected row
+  $("#example-basic-expandable2 tbody").on("mousedown", "tr", function() {
+      $(".selected").not(this).removeClass("selected");
+      $(this).toggleClass("selected");
+  });
+
+  function deleteFile(fileID) {
+      var path = $("#path").val();
+      if(window.confirm("确定删除该项目?")){
+          $.ajax({
+              type: "POST",
+              url: path + "/files/delete",
+              data: {fileID: fileID},
+              success: function(result) {
+                  var res = eval(result)
+                  alert(res["message"]);
+                  window.location.reload();
+              },
+              error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  alert(errorThrown);
+              }
+          });
+      }
+      return;
+  }
+
+  var uploader = new qq.FineUploader({
+      debug: true,
+      multiple: false,
+      element: document.getElementById('fine-uploader'),
+      validation: {
+          allowedExtensions: ['jpeg', 'jpg', 'gif', 'png','bmp','xls','doc','ppt','xlsx','docx','pptx',
+              'pdf','txt','zip','rar','mp4','avi','rmvb','flv'],
+          sizeLimit: 200*1024*1024 // 200MB.
+      },
+      request: {
+          endpoint: '/auditsys/files/upload'
+      },
+      deleteFile: {
+          enabled: true,
+          forceConfirm: true,
+          confirmMessage: '确定要删除文件 {filename} 吗?',
+          deletingFailedText: '删除失败!',
+          endpoint: '/auditsys/files/delete_tmp'
+      },
+      retry: {
+          enableAuto: true
+      },
+      callbacks: {
+          onComplete: function(id, failIDs, responseJSON)  {
+              $("#tmpFileID").val(responseJSON.newUuid);
+          }
+
+      }
+  });
+
+  $('#addFileModal').on('hidden.bs.modal', function () {
+      fileInfo.clear();
+      clearForm($('#vform'));
+      $('#vform').validate().resetForm();
+  });
+
+  function clearForm(form) {
+      // input清空
+      $(':input', form).each(function () {
+          var type = this.type;
+          var tag = this.tagName.toLowerCase(); // normalize case
+          if (type == 'text' || type == 'password' || tag == 'textarea')
+              this.value = '';
+          // 多选checkboxes清空
+          // select 下拉框清空
+          else if (tag == 'select')
+              this.selectedIndex = -1;
+      });
+  };
+
+  /*]]>*/
+</script>
+
+</body>
+</html>
