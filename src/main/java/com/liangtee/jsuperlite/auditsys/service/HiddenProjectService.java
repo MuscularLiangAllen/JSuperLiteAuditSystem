@@ -40,4 +40,7 @@ public class HiddenProjectService extends BaseService<HiddenProject, Integer> {
     }
 
     public HiddenProject add(HiddenProject hiddenProject) {return hiddenProjectRepository.save(hiddenProject);}
+
+    public HiddenProject findOne(Integer id) {return hiddenProjectRepository.findOne(id);}
+
 }

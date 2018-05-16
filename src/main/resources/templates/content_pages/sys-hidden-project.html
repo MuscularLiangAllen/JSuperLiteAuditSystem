@@ -16,8 +16,8 @@
 
     <section class="content-header">
       <h1 style="font-family: 'Microsoft YaHei';">
-        工程签证管理
-        <small>Project Visa Management</small>
+        隐蔽工程管理
+        <small>Hidden Project Management</small>
       </h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
@@ -53,7 +53,7 @@
 
     <div class="modal fade" id="projectVisaModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" >
       <div class="modal-dialog" role="document" style="width: 80%;">
-        <div id="projectVisaInfo" class="modal-content">
+        <div id="hiddenProjectInfo" class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             <h4 class="modal-title" style="font-family: 'Microsoft YaHei';">
@@ -79,7 +79,7 @@
                   <label style="color: red;">*</label><label>施&nbsp;&nbsp;工&nbsp;&nbsp;部&nbsp;&nbsp;&nbsp;位:</label>
                   <input id="hiddenProjectName" type="text" style="width: 30%;" />
                 </div>
-                <template v-if="visaID == ''">
+                <template v-if="id == ''">
                   <table class="table table-bordered hiddenProjectTable">
                     <thead>
                     <tr style="background-color: #eee; border: 1px solid #bbb;">
@@ -109,20 +109,16 @@
                     <thead>
                     <tr style="background-color: #eee; border: 1px solid #bbb;">
                       <th style="width: 30px; border: 1px solid #bbb;">#</th>
-                      <th style="border: 1px solid #bbb;">签证内容</th>
-                      <th style="width: 80px; border: 1px solid #bbb;">单位</th>
-                      <th style="width: 80px; border: 1px solid #bbb;">数量</th>
-                      <th style="border: 1px solid #bbb;">签证原因</th>
+                      <th style="border: 1px solid #bbb;">工程内容</th>
+                      <th style="width: 50%; border: 1px solid #bbb;">工程量</th>
                     </tr>
                     </thead>
                     <tbody>
-                  <template v-for="(visaEntry, index) in visaEntryList">
+                  <template v-for="(entry, index) in entryList">
                       <tr>
                         <td>{{index+1}}</td>
-                        <td>{{visaEntry.itemContent}}</td>
-                        <td>{{visaEntry.itemUnit}}</td>
-                        <td>{{visaEntry.itemQty}}</td>
-                        <td>{{visaEntry.reason}}</td>
+                        <td>{{entry.content}}</td>
+                        <td>{{entry.qty}}</td>
                       </tr>
                   </template>
                     </tbody>
@@ -132,10 +128,18 @@
             </div>
 
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" onclick="createNewHiddenProject();">保&nbsp;&nbsp;存</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-          </div>
+
+          <template v-if="id == ''">
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" onclick="createNewHiddenProject();">保&nbsp;&nbsp;存</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+          </template>
+          <template v-else="v-else">
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -183,15 +187,15 @@
         //初始化Table
         oTableInit.Init = function () {
             $('#dataTable').bootstrapTable({
-                url: $('#path').val()+'/project-visa/load',         //请求后台的URL（*）
+                url: $('#path').val()+'/hidden-project/load',         //请求后台的URL（*）
                 method: 'get',                      //请求方式（*）
                 toolbar: '#toolbar',                //工具按钮用哪个容器
                 striped: true,                      //是否显示行间隔色
                 cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
                 pagination: true,                   //是否显示分页（*）
-                uniqueId: 'iD',
+                uniqueId: 'id',
                 sortable: true,                     //是否启用排序
-                sortName: 'createDate',
+                sortName: 'startDate',
                 sortOrder: "desc",                   //排序方式
                 queryParams: oTableInit.queryParams,//传递参数（*）
                 sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
@@ -222,28 +226,28 @@
                         title: '操作',
                         formatter:function(value, row, index){
                             // return '<a href=\"' + $('#path').val() + link + '?projectID=' + row.iD + '\">查看细节条目</a>'
-                            return '<a href=\"javascript:loadVisaItems('+ "'" + row.visaID + "'" + "," + "'" + row.visaName + "'" + ');\">查看细节条目</a>'
+                            return '<a href=\"javascript:loadEntries('+ "'" + row.id + "'" + "," + "'" + row.constructionPosition + "'" + ');\">查看细节条目</a>'
                         }
                     }, {
-                        field: 'visaName',
-                        title: '签证名称',
+                        field: 'constructionPosition',
+                        title: '施工部位',
                         sortable : true,
-                        sortName: 'VISA_NAME'
+                        sortName: 'construction_position'
                     }, {
-                        field: 'createDate',
+                        field: 'startDate',
                         title: '创建日期',
                         sortable : true,
-                        sortName: 'CREATE_DATE'
+                        sortName: 'start_date'
                     }, {
                         field: 'createUserName',
                         title: '创建人',
                         sortable : true,
-                        sortName: 'CREATE_USER_NAME'
+                        sortName: 'create_user_name'
                     }, {
                         // field: 'materialList',
-                        title: '工程签证下载',
+                        title: '收方隐蔽工程表下载',
                         formatter:function(value, row, index){
-                            return '<a href=\"' + $('#path').val() + '/files/download/' + row.visaFolderID + '\">下载</a>'
+                            return '<a href=\"' + $('#path').val() + '/files/download/' + row.hiddenProjectFolderID + '\">下载</a>'
                         }
                     }
                 ]
@@ -273,7 +277,7 @@
             alert('请选择要删除的行');
             return;
         }
-        if(window.confirm('确定删除'+selectedRows.length+'条记录?')){
+        if(window.confirm('确定删除'+selectedRows.length+'条记录?')) {
             var codes = '';
             for(var i=0; i<selectedRows.length; i++) {
                 codes += selectedRows[i].code+',';
@@ -303,7 +307,7 @@
   function createNewHiddenProject() {
       var hiddenProjectName = $('#hiddenProjectName').val().replace(/\s/g,"");
       if(hiddenProjectName == null || hiddenProjectName == '') {
-          alert('签证名不能为空');
+          alert('施工部位不能为空');
           return;
       }
 
@@ -354,28 +358,28 @@
       $('#entry'+entryCounter--).remove();
   }
 
-  var projectVisaInfo = new Vue({
-      el: '#projectVisaInfo',
+  var hiddenProjectInfo = new Vue({
+      el: '#hiddenProjectInfo',
       data: {
-          visaID: '',
-          visaEntryList: []
+          id: '',
+          entryList: []
       }
   });
 
-  function loadVisaItems(visaID, visaName) {
-      $('#visaName').val(visaName);
-      projectVisaInfo.visaID = visaID;
-      var url = $("#path").val() + '/project-visa/loadVisaItems';
+  function loadEntries(id, constructionPosition) {
+      $('#hiddenProjectName').val(constructionPosition);
+      hiddenProjectInfo.id = id;
+      var url = $("#path").val() + '/hidden-project/loadEntries';
       $.ajax({
           type: 'POST',
           url: url,
           data: {
-              visaID: visaID
+              id: id
           },
           success: function(result) {
               var jsonObj = eval(result);
               if(jsonObj.message == 'success') {
-                  projectVisaInfo.visaEntryList = jsonObj.visaEntryList;
+                  hiddenProjectInfo.entryList = jsonObj.entryList;
                   showVisaModal();
               }
           },
@@ -386,9 +390,9 @@
   }
 
   $('#projectVisaModal').on('hidden.bs.modal', function () {
-      projectVisaInfo.visaID = '';
-      $('#visaName').val('');
-      clearForm($('#projectVisaInfo'));
+      hiddenProjectInfo.id = '';
+      $('#hiddenProjectName').val('');
+      clearForm($('#hiddenProjectInfo'));
   });
 
   /*]]>*/

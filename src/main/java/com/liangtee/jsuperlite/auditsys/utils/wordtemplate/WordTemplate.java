@@ -73,52 +73,5 @@ public class WordTemplate {
 		}
 	}
 
-	private void replaceBreakLine() {
-		List<XWPFParagraph> allXWPFParagraphs = document.getParagraphs();
-		for (XWPFParagraph xwpfParagraph : allXWPFParagraphs) {
-			if(xwpfParagraph.getParagraphText().contains("<wbr>")) {
-				List<XWPFRun> xwpfRunList = xwpfParagraph.getRuns();
-				for(int i=0; i<xwpfRunList.size(); i++) {
-					if(xwpfRunList.get(i).text().contains("<wbr>")) {
-						XWPFRun xRun = xwpfRunList.get(i);
-						xRun.setText(xRun.text().replace("<wbr>", ""));
-						xRun.addCarriageReturn();
-						xwpfRunList.set(i, xwpfRunList.set(i, xRun));
-					}
-				}
-			}
-		}
-	}
-
-	private void replaceTableBreakLine() {
-		List<XWPFTable> xwpfTables = document.getTables();
-		for(XWPFTable xwpfTable : xwpfTables){
-			System.out.println("table " + xwpfTable.getText());
-			if(xwpfTable.getText().contains("<wbr>")) {
-				List<XWPFTableRow> xwpfTableRowList = xwpfTable.getRows();
-				for(int i=0; i<xwpfTableRowList.size(); i++) {
-					List<XWPFTableCell> xwpfTableCellList = xwpfTableRowList.get(i).getTableCells();
-					for(int j=0; j<xwpfTableCellList.size(); j++) {
-						if(xwpfTableCellList.get(j).getText().contains("<wbr>")) {
-							for(XWPFParagraph xwpfParagraph : xwpfTableCellList.get(j).getParagraphs()) {
-								if(xwpfParagraph.getText().contains("<wbr>")) {
-									List<XWPFRun> xwpfRunList = xwpfParagraph.getRuns();
-									for(int k=0; k<xwpfRunList.size(); k++) {
-										if(xwpfRunList.get(k).text().contains("<wbr>")) {
-											XWPFRun xRun = xwpfRunList.get(k);
-											xRun.setText(xRun.text().replace("<wbr>", ""));
-											xRun.addCarriageReturn();
-											xwpfRunList.set(k, xwpfRunList.set(k, xRun));
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
 
 }

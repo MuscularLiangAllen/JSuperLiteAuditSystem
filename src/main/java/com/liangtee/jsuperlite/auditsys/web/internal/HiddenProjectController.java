@@ -77,51 +77,50 @@ public class HiddenProjectController extends BaseController {
         return "content_pages/sys-hidden-project";
     }
 
-//    @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_DEPT_STUFF)
-//    @RequestMapping(path = "load", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
-//    public @ResponseBody String load(@RequestParam(name="limit", required = true) int limit,
-//                                     @RequestParam(name="offset", required = true) int offset,
-//                                     @RequestParam(name="sort", required = false) String sort,
-//                                     @RequestParam(name="order", required = false) String order,
-//                                     @RequestParam(name="keyword", required = false) String keyword,
-//                                     HttpServletRequest request, Model model) {
-//
-//        User user = (User) request.getSession().getAttribute("user");
-//        PageModel pageModel = new PageModel(limit, (limit + offset)/limit);
-//
-//        List<ProjectVisa> projectVisaList = null;
-//        if(keyword != null && !keyword.isEmpty()) {
-//            keyword = "%" + keyword.trim() + "%";
-//            projectVisaList = projectVisaService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC,
-//                    "VISA_NAME like ? OR CREATE_DATE like ?", keyword, keyword);
-//        } else {
-//            projectVisaList = projectVisaService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC, "1 = ?", 1);
-//        }
-//
-//        int totalSize = projectVisaService.count("1 = ?", 1);
-//
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("rows", projectVisaList);
-//        jsonObject.put("total", totalSize);
-//
-//        return jsonObject.toJSONString();
-//    }
+    @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_DEPT_STUFF)
+    @RequestMapping(path = "load", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    public @ResponseBody String load(@RequestParam(name="limit", required = true) int limit,
+                                     @RequestParam(name="offset", required = true) int offset,
+                                     @RequestParam(name="sort", required = false) String sort,
+                                     @RequestParam(name="order", required = false) String order,
+                                     @RequestParam(name="keyword", required = false) String keyword,
+                                     HttpServletRequest request, Model model) {
 
-//    @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_DEPT_STUFF)
-//    @RequestMapping(path = "loadVisaItems", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-//    public @ResponseBody String loadVisaItems(@RequestParam(name="visaID", required = true) String visaID,
-//                                     HttpServletRequest request, Model model) {
-//
-//        ProjectVisa projectVisa = projectVisaService.findOne(visaID);
-////        List<ProjectVisaEntry> projectVisaEntryList = projectVisa.getVisaEntryList();
-//        model.addAttribute("projectVisa", projectVisa);
-//
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("message", "success");
-//        jsonObject.put("visaEntryList", projectVisa.getVisaEntryList());
-//
-//        return JSON.toJSONString(jsonObject, SerializerFeature.DisableCircularReferenceDetect);
-//    }
+        User user = (User) request.getSession().getAttribute("user");
+        PageModel pageModel = new PageModel(limit, (limit + offset)/limit);
+
+        List<HiddenProject> hiddenProjectList = null;
+        if(keyword != null && !keyword.isEmpty()) {
+            keyword = "%" + keyword.trim() + "%";
+            hiddenProjectList = hiddenProjectService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC,
+                    "construction_position like ? or start_date like ?", keyword, keyword);
+        } else {
+            hiddenProjectList = hiddenProjectService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC, "1 = ?", 1);
+        }
+
+        int totalSize = hiddenProjectService.count("1 = ?", 1);
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("rows", hiddenProjectList);
+        jsonObject.put("total", totalSize);
+
+        return jsonObject.toJSONString();
+    }
+
+    @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_DEPT_STUFF)
+    @RequestMapping(path = "loadEntries", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    public @ResponseBody String loadVisaItems(@RequestParam(name="id", required = true) Integer id,
+                                     HttpServletRequest request, Model model) {
+
+        HiddenProject hiddenProject = hiddenProjectService.findOne(id);
+        model.addAttribute("hiddenProject", hiddenProject);
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("message", "success");
+        jsonObject.put("entryList", hiddenProject.getHiddenProjectEntryList());
+
+        return JSON.toJSONString(jsonObject, SerializerFeature.DisableCircularReferenceDetect);
+    }
 
     @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_DEPT_STUFF, excludeLevel = {UserConfs.RoleCode.USER_TYPE_EXTERNAL_AUDITER})
     @RequestMapping(path = "createHiddenProject", method = RequestMethod.POST)
@@ -131,6 +130,9 @@ public class HiddenProjectController extends BaseController {
                              @RequestParam(name="contentArray[]", required = true) String[] contentArray,
                              @RequestParam(name="qtyArray[]", required = true) String[] qtyArray,
                              HttpServletRequest request, Model model) {
+
+        StringBuffer grantedUserIDs = new StringBuffer();
+        userService.findByDeptID(super.getOperator().getDeptID()).forEach(u -> grantedUserIDs.append(u.getUID()).append(","));
 
         List<HiddenProjectEntry> hiddenProjectEntryList = new ArrayList<HiddenProjectEntry>(contentArray.length);
 
@@ -142,11 +144,12 @@ public class HiddenProjectController extends BaseController {
         List<FileInfo> result = fileService.findAll("BELONG_TO_PROJECT = ? AND FILE_NAME = ?", projectID, "隐蔽工程");
         if(result != null && result.size() > 0) hiddenProjectHomeFolder = result.get(0);
         else {
-            return JSON.toJSONString(new ReturnMessage("创建新隐蔽工程目录失败: 找不到隐蔽工程根目录"));
-        }
+//            return JSON.toJSONString(new ReturnMessage("创建新隐蔽工程目录失败: 找不到隐蔽工程根目录"));
+            FileInfo projectRootFolder = fileService.findAll("belong_to_project = ? and parent_folder_id = ?", projectID, FileInfo.NO_PARENT_FOLDER).get(0);
+            hiddenProjectHomeFolder = fileService.createFile(super.getOperator(), "隐蔽工程", FileInfo.FOLDER_TYPE, projectRootFolder.getUUID(),
+                    "", grantedUserIDs.toString(), "", projectID, FileInfo.NON_EDITABLE);
 
-        StringBuffer grantedUserIDs = new StringBuffer();
-        userService.findByDeptID(super.getOperator().getDeptID()).forEach(u -> grantedUserIDs.append(u.getUID()).append(","));
+        }
 
         FileInfo newHiddenProjectFolder = fileService.createFile(super.getOperator(), String.format("%s-%s", TimeFormater.format("yyyyMMdd"), hiddenProjectName), FileInfo.FOLDER_TYPE, hiddenProjectHomeFolder.getUUID(),
                 "", grantedUserIDs.toString(), "", projectID, FileInfo.NON_EDITABLE);

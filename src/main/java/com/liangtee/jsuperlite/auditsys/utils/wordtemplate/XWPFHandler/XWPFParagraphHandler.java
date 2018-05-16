@@ -181,7 +181,9 @@ public class XWPFParagraphHandler {
 					System.out.println("wbr " + newContext);
 					String[] textArray = newContext.split("<wbr>");
 					for(int i=0; i<textArray.length; i++) {
-//						XWPFRunHandler.setText(run, textArray[i]);
+						if(i == 0) {
+							XWPFRunHandler.setText(run,"");
+						}
 						run.setText(textArray[i]);
 						run.addBreak();
 					}

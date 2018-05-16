@@ -135,12 +135,18 @@
                 </template>
               </div>
             </div>
-
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" onclick="createNewVisa();">保&nbsp;&nbsp;存</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
-          </div>
+          <template v-if="visaID == ''">
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" onclick="createNewVisa();">保&nbsp;&nbsp;存</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+          </template>
+          <template v-else="v-else">
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+            </div>
+          </template>
         </div>
       </div>
     </div>
