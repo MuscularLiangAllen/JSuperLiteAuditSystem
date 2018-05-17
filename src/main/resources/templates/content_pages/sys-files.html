@@ -6,16 +6,18 @@
 <div th:replace="/modules/bottom::js_library"></div>
 
 <link rel="stylesheet" th:href="@{/plugins/bootstrap-table/bootstrap-table.min.css}"/>
-<link rel="stylesheet" href="https://cdn.bootcss.com/jquery-treegrid/0.2.0/css/jquery.treegrid.min.css" />
+<link rel="stylesheet" th:href="@{/plugins/jquery-treegrid/css/jquery.treegrid.css}" />
 
 <script th:src="@{/plugins/fineuploader/fine-uploader.core.min.js}"></script>
 <script th:src="@{/plugins/fineuploader/fine-uploader.min.js}"></script>
 
+<!--<script src="https://cdn.bootcss.com/jquery-treegrid/0.2.0/js/jquery.treegrid.min.js"></script>-->
+<script th:src="@{/plugins/jquery-treegrid/js/jquery.treegrid.js}"></script>
 
 <body class="hold-transition skin-blue sidebar-mini">
 
     <!-- Content Header (Page header) -->
-    <section id="vsearch" class="content-header" style="border: 0px solid red; height: 50px; padding-top: 0px;">
+    <section class="content-header" style="border: 0px solid red; height: 50px; padding-top: 0px;">
       <div class="row" style="padding-top: 10px; padding-bottom: 0px;">
         <div class="col-lg-10 col-md-10">
           <div class="col-lg-9 col-md-9">
@@ -54,7 +56,6 @@
               </div>
               <table id="dataTable" class="data-table" style="white-space: nowrap;" width="100%"></table>
             </div>
-
 
             <div id="vsearchTable" class="box-body table-responsive" style="display: none;">
               <table id="example-basic-expandable2" class="table table-hover ">
@@ -110,33 +111,6 @@
 
               </table>
               <hr style="border-color: #CCCCCC;"/>
-              <!--<button type="submit" class="btn btn-success pull-left" onclick="showAddModal('root')">添加顶级文件夹</button>-->
-              <!--<div class="box-tools pull-right" style="margin-right: 10px;">-->
-                <!--<ul id="pageList" class="pagination pagination-sm inline">-->
-                  <!--&lt;!&ndash;<li><a href="#">&laquo;</a></li>&ndash;&gt;-->
-                  <!--&lt;!&ndash;<li><a href="#">1</a></li>&ndash;&gt;-->
-                  <!--&lt;!&ndash;<li><a href="#">2</a></li>&ndash;&gt;-->
-                  <!--&lt;!&ndash;<li><a href="#">3</a></li>&ndash;&gt;-->
-                  <!--&lt;!&ndash;<li><a href="#">&raquo;</a></li>&ndash;&gt;-->
-                <!--</ul>-->
-              <!--</div>-->
-              <!--<script th:inline="javascript">-->
-                  <!--$('#pageList').jqPaginator({-->
-                      <!--pageSize: 10,-->
-                      <!--totalCounts: [[${totalCounts}]],-->
-                      <!--visiblePages: 10,-->
-                      <!--currentPage: 1,-->
-
-                      <!--first: '<li class="first"><a href="javascript:void(0);">首页</a></li>',-->
-                      <!--prev: '<li class="prev"><a href="javascript:void(0);">向前</a></li>',-->
-                      <!--next: '<li class="next"><a href="javascript:void(0);">向后</a></li>',-->
-                      <!--last: '<li class="last"><a href="javascript:void(0);">末页</a></li>',-->
-                      <!--page: '<li class="page"><a href="javascript:void(0);">{{page}}</a></li>',-->
-                      <!--onPageChange: function (page) {-->
-                          <!--$.get("/auditsys/files/show?pageNumber="+page);-->
-                      <!--}-->
-                  <!--});-->
-              <!--</script>-->
             </div>
 
 
@@ -248,18 +222,17 @@
   <!-- ACL Modal -->
   <div th:replace="/modules/ACL::zTreeList"></div>
 
-<script th:src="@{/plugins/JQueryZtree/jquery.ztree.core.min.js}"></script>
-<script th:src="@{/plugins/JQueryZtree/jquery.ztree.excheck.min.js}"></script>
-
 <script th:src="@{/plugins/bootstrap-table/bootstrap-table.min.js}"></script>
 <script th:src="@{/plugins/bootstrap-table/bootstrap-table-zh-CN.min.js}"></script>
 <script th:src="@{/plugins/bootstrap-table/treegrid/bootstrap-table-treegrid.js}"></script>
-<script src="https://cdn.bootcss.com/jquery-treegrid/0.2.0/js/jquery.treegrid.min.js"></script>
+
 
 <script th:src="@{/js/vue/vue.min.js}"></script>
 
 <script th:inline="javascript">
   /*<![CDATA[*/
+
+  var $table = $('.data-table');
 
   var TableInit = function () {
       var oTableInit = new Object();
@@ -327,7 +300,7 @@
                       sortName: 'SUBMIT_DATE'
                   }, {
                       title: '操作',
-                      formatter:function(value, row, index){
+                      formatter:function(value, row, index) {
                           return '<a href=\"javascript:loadEntries('+ "'" + row.id + "'" + "," + "'" + row.id + "'" + ');\">查看细节条目</a>'
                       }
                   }
@@ -338,13 +311,13 @@
               onLoadSuccess: function(data) {
                   console.log('load');
                   // jquery.treegrid.js
-                  $('#dataTable').treegrid({
+                  $table.treegrid({
                       // initialState: 'collapsed',
                       treeColumn: 1,
                       // expanderExpandedClass: 'glyphicon glyphicon-minus',
                       // expanderCollapsedClass: 'glyphicon glyphicon-plus',
                       onChange: function() {
-                          $('#dataTable').bootstrapTable('resetWidth');
+                          $table.bootstrapTable('resetWidth');
                       }
                   });
               }

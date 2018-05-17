@@ -18,14 +18,22 @@ import javax.persistence.Transient;
 
 @Entity
 @Table(name = "T_FILE_INFO")
-@Document(indexName = "jsuperliteauditsys",type = "fileinfo")
+@Document(indexName = "jsuperliteauditsys", type = "fileinfo")
 public class FileInfo {
 
     @Id
     @org.springframework.data.annotation.Id
     @Column(name = "ID")
-    @JSONField(name = "id")
+
     private String UUID;
+
+    @JSONField(name = "id")
+    @Transient
+    private int seq;
+
+    @JSONField(name = "pid")
+    @Transient
+    private int pSeq;
 
     @Column(name = "FILE_NAME", nullable = false)
     @Field
@@ -238,5 +246,21 @@ public class FileInfo {
 
     public void setEditable(int editable) {
         this.editable = editable;
+    }
+
+    public int getSeq() {
+        return seq;
+    }
+
+    public void setSeq(int seq) {
+        this.seq = seq;
+    }
+
+    public int getpSeq() {
+        return pSeq;
+    }
+
+    public void setpSeq(int pSeq) {
+        this.pSeq = pSeq;
     }
 }

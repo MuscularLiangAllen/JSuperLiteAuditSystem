@@ -177,7 +177,13 @@ public class FileService extends BaseService<FileInfo, String> {
 
         List<FileInfo> rootNodes = findByPage(page, null, -1, "PARENT_FOLDER_ID = ?", FileInfo.NO_PARENT_FOLDER);
         Queue<FileInfo> queue = new LinkedList<FileInfo>();
-        queue.addAll(rootNodes);
+//        queue.addAll(rootNodes);
+        int i = 1;
+        for(; i<=rootNodes.size(); i++) {
+            rootNodes.get(i-1).setSeq(i);
+            rootNodes.get(i-1).setpSeq(0);
+            queue.add(rootNodes.get(i-1));
+        }
 
         Set<FileInfo> IDs = new HashSet<FileInfo>();
 
@@ -188,7 +194,11 @@ public class FileService extends BaseService<FileInfo, String> {
                 IDs.add(fileInfo);
             }
             List<FileInfo> childNodes = findAll("PARENT_FOLDER_ID = ?", fileInfo.getUUID());
-            queue.addAll(childNodes);
+//            queue.addAll(childNodes);
+            for(int j=0; j<childNodes.size(); j++) {
+                childNodes.get(j).setSeq(i++);
+                childNodes.get(j).setpSeq(fileInfo.getSeq());
+            }
             int parentIndex = result.indexOf(fileInfo);
             result.addAll(parentIndex+1, childNodes);
             IDs.addAll(childNodes);
@@ -203,7 +213,13 @@ public class FileService extends BaseService<FileInfo, String> {
             List<FileInfo> result = new LinkedList<FileInfo>();
             List<FileInfo> rootNodes = findByPage(page, sortProperty, sequence, "FILE_NAME like ?", queryFileName);
             Queue<FileInfo> queue = new LinkedList<FileInfo>();
-            queue.addAll(rootNodes);
+//            queue.addAll(rootNodes);
+            int i = 1;
+            for(; i<=rootNodes.size(); i++) {
+                rootNodes.get(i-1).setSeq(i);
+                rootNodes.get(i-1).setpSeq(0);
+                queue.add(rootNodes.get(i-1));
+            }
 
             Set<FileInfo> IDs = new HashSet<FileInfo>();
 
@@ -214,7 +230,11 @@ public class FileService extends BaseService<FileInfo, String> {
                     IDs.add(fileInfo);
                 }
                 List<FileInfo> childNodes = findAll("PARENT_FOLDER_ID = ?", fileInfo.getUUID());
-                queue.addAll(childNodes);
+//                queue.addAll(childNodes);
+                for(int j=0; j<childNodes.size(); j++) {
+                    childNodes.get(j).setSeq(i++);
+                    childNodes.get(j).setpSeq(fileInfo.getSeq());
+                }
                 int parentIndex = result.indexOf(fileInfo);
                 result.addAll(parentIndex+1, childNodes);
                 IDs.addAll(childNodes);
