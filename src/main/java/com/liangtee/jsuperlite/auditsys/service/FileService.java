@@ -171,7 +171,7 @@ public class FileService extends BaseService<FileInfo, String> {
 
     }
 
-    public List<FileInfo> getAll(PageModel page) {
+    public List<FileInfo> getTreeList(PageModel page) {
 
         List<FileInfo> result = new LinkedList<FileInfo>();
 
@@ -197,21 +197,82 @@ public class FileService extends BaseService<FileInfo, String> {
         return result;
     }
 
-    public List<FileInfo> findFilesByUser(long userID, PageModel page) {
+    public List<FileInfo> getTreeList(PageModel page, String sortProperty, int sequence, String queryFileName) {
 
+        if(queryFileName != null && !queryFileName.isEmpty()) {
+            List<FileInfo> result = new LinkedList<FileInfo>();
+            List<FileInfo> rootNodes = findByPage(page, sortProperty, sequence, "FILE_NAME like ?", queryFileName);
+            Queue<FileInfo> queue = new LinkedList<FileInfo>();
+            queue.addAll(rootNodes);
+
+            Set<FileInfo> IDs = new HashSet<FileInfo>();
+
+            while (!queue.isEmpty()) {
+                FileInfo fileInfo = queue.poll();
+                if(!IDs.contains(fileInfo)) {
+                    result.add(fileInfo);
+                    IDs.add(fileInfo);
+                }
+                List<FileInfo> childNodes = findAll("PARENT_FOLDER_ID = ?", fileInfo.getUUID());
+                queue.addAll(childNodes);
+                int parentIndex = result.indexOf(fileInfo);
+                result.addAll(parentIndex+1, childNodes);
+                IDs.addAll(childNodes);
+            }
+
+            return result;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param userID
+     * @param page
+     * @param sortProperty
+     * @param sequence
+     * @param queryFileName
+     * @return
+     */
+    public List<FileInfo> findFilesByUser(long userID, PageModel page, String sortProperty, int sequence, String queryFileName) {
         List<FileInfo> result = new ArrayList<FileInfo>();
         Set<String> fileIDs = new HashSet<String>();
 
         queryHelper.findAll(FileToUser.class, "USER_ID = ?", userID).forEach(f -> fileIDs.add(f.getFileID()));
 
-        getAll(page).forEach(f -> {
-            if(f.getSubmitterID() == userID || fileIDs.contains(f.getUUID()))
-                result.add(f);
-        });
+        if(queryFileName == null) {
+            getTreeList(page).forEach(f -> {
+                if(f.getSubmitterID() == userID || fileIDs.contains(f.getUUID()))
+                    result.add(f);
+            });
+        } else {
+            getTreeList(page, sortProperty, sequence, queryFileName).forEach(f -> {
+                if(f.getSubmitterID() == userID || fileIDs.contains(f.getUUID()))
+                    result.add(f);
+            });
+        }
 
         return result;
-
     }
+
+    public List<FileInfo> findFilesByUser(long userID, PageModel page) {
+        return findFilesByUser(userID, page, "SUBMIT_DATE", -1 ,null);
+    }
+
+//    public List<FileInfo> findFilesByUser(long userID, PageModel page) {
+//
+//        List<FileInfo> result = new ArrayList<FileInfo>();
+//        Set<String> fileIDs = new HashSet<String>();
+//
+//        queryHelper.findAll(FileToUser.class, "USER_ID = ?", userID).forEach(f -> fileIDs.add(f.getFileID()));
+//
+//        getTreeList(page).forEach(f -> {
+//            if(f.getSubmitterID() == userID || fileIDs.contains(f.getUUID()))
+//                result.add(f);
+//        });
+//
+//        return result;
+//    }
 
     public FileInfo createFile(User user, String fileName, int isFolder, String parentFolderID, String fileDesc, String grantedUsers,
                            String tmpFileID, String belongToID, int editable) {

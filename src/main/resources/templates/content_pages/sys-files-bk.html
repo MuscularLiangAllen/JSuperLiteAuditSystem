@@ -5,9 +5,6 @@
 
 <div th:replace="/modules/bottom::js_library"></div>
 
-<link rel="stylesheet" th:href="@{/plugins/bootstrap-table/bootstrap-table.min.css}"/>
-<link rel="stylesheet" href="https://cdn.bootcss.com/jquery-treegrid/0.2.0/css/jquery.treegrid.min.css" />
-
 <script th:src="@{/plugins/fineuploader/fine-uploader.core.min.js}"></script>
 <script th:src="@{/plugins/fineuploader/fine-uploader.min.js}"></script>
 
@@ -24,6 +21,18 @@
               <small>File Management</small>
             </h3>
           </div>
+          <div class="col-lg-3 col-md-3">
+            <div class="input-group" style="float: right; margin-top: 5px;">
+              <input id="keyword" type="text" class="form-control" v-model="keyword" v-on:keyup.enter="search"/>
+              <span class="input-group-btn">
+						<button class="btn btn-default" type="button" v-on:click="search">
+							搜索
+						</button>
+					</span>
+            </div>
+          </div>
+          <script>
+          </script>
         </div>
         <div class="col-lg-2 col-md-2">
           <ol class="breadcrumb" style="background-color: #FFF; border: 0px solid green;">
@@ -39,22 +48,101 @@
       <input id="rootpath" type="hidden" th:value="@{/}"></input>
       <input id="path" type="hidden" th:value="@{/auditsys}"></input>
       <input id="totalCounts" type="hidden" th:value="${totalCounts}"></input>
+      <!-- Small boxes (Stat box) -->
+      <!-- /.row -->
       <!-- Main row -->
       <div class="row">
-        <section class="col-md-12 col-lg-12 connectedSortable">
+        <!-- Left col -->
+        <section class="col-lg-10 connectedSortable">
+
           <div class="box box-primary">
             <div class="box-header">
-              <div id="toolbar" class="btn-group">
-                <button id="btn_add" type="button" class="btn btn-success" onclick="javascript:showVisaModal();">
-                  <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span>添加顶级文件夹 (Add)
-                </button>
-                <button id="btn_delete" type="button" class="btn btn-danger" onclick="javascript:deleteItems();">
-                  <span class="glyphicon glyphicon-remove" aria-hidden="true" ></span>删除 (Delete)
-                </button>
-              </div>
-              <table id="dataTable" class="data-table" style="white-space: nowrap;" width="100%"></table>
+              <i class="ion ion-clipboard"></i>
+              <h3 class="box-title" style="font-family: 'Microsoft YaHei'; ">文件列表</h3>
             </div>
+            <!-- /.box-header -->
+            <div class="box-body table-responsive">
+              <table id="example-basic-expandable" class="table table-hover ">
+                <tbody>
+                  <thead>
+                    <tr style="background-color: #EEE;">
+                      <th>文件名称</th>
+                      <th>类型</th>
+                      <th>大小</th>
+                      <th>描述</th>
+                      <th>创建者</th>
+                      <th>创建日期</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <th:block th:each="file, status : ${fileInfoList}">
 
+                    <th:block th:if="${file.isFolder == 1}">
+                      <tr th:attr="data-tt-id=${file.UUID}, data-tt-parent-id=${file.parentFolder}">
+                        <td><i class="fa fa-folder-open"></i> <th:block th:text="${file.fileName}"></th:block></td>
+                        <td th:text="${file.fileType}">DOC</td>
+                        <td></td>
+                        <td th:text="${file.fileDesc}">申请信息</td>
+                        <td th:text="${file.submitterName}">admin</td>
+                        <td th:text="${file.subDate}">2017/5/11</td>
+                        <td><a href="javascript:void(0);" th:id="${file.UUID}" onclick="showAddModal(this.id)">添加</a> /
+                          <a href="javascript:void(0);" th:onclick="'javascript:loadFileInfo(\''+${file.UUID}+'\');'">修改</a> / <a href="javascript:void(0);" th:onclick="'javascript:deleteFileByID(\''+${file.UUID}+'\');'">删除</a> / <a th:href="${'/auditsys/files/download/'+file.UUID}">下载</a></td>
+                      </tr>
+                    </th:block>
+                    <th:block th:if="${file.isFolder == 0}">
+                      <tr th:attr="data-tt-id=${file.UUID}, data-tt-parent-id=${file.parentFolder}">
+                        <td><i class="fa fa-file-text-o"></i> <th:block th:text="${file.fileName}"></th:block></td>
+                        <td th:text="${file.fileType}">DOC</td>
+                        <th:block th:if="${file.isFolder == 0}">
+                          <th:block th:if="${file.fileSize lt 1048576}">
+                            <td th:text="${file.fileSize / 1024 + 'KB'}">108KB</td>
+                          </th:block>
+                          <th:block th:if="${file.fileSize > 1024*1024}">
+                            <td th:text="${file.fileSize / 1048576 + 'MB'}">108KB</td>
+                          </th:block>
+                        </th:block>
+                        <td th:text="${file.fileDesc}">申请信息</td>
+                        <td th:text="${file.submitterName}">admin</td>
+                        <td th:text="${file.subDate}">2017/5/11</td>
+                        <td><a href="javascript:void(0);" th:onclick="'javascript:loadFileInfo(\''+${file.UUID}+'\');'">修改</a> / <a href="javascript:void(0);" th:onclick="'javascript:deleteFileByID(\''+${file.UUID}+'\');'">删除</a> / <a th:href="${'/auditsys/files/download/'+file.UUID}">下载</a></td>
+                      </tr>
+                    </th:block>
+                  </th:block>
+
+                </tbody>
+
+              </table>
+              <hr style="border-color: #CCCCCC;"/>
+              <button type="submit" class="btn btn-success pull-left" onclick="showAddModal('root')">添加顶级文件夹</button>
+              <div class="box-tools pull-right" style="margin-right: 10px;">
+                <ul id="pageList" class="pagination pagination-sm inline">
+                  <!--<li><a href="#">&laquo;</a></li>-->
+                  <!--<li><a href="#">1</a></li>-->
+                  <!--<li><a href="#">2</a></li>-->
+                  <!--<li><a href="#">3</a></li>-->
+                  <!--<li><a href="#">&raquo;</a></li>-->
+                </ul>
+              </div>
+              <script th:inline="javascript">
+                  $('#pageList').jqPaginator({
+                      pageSize: 10,
+                      totalCounts: [[${totalCounts}]],
+                      visiblePages: 10,
+                      currentPage: [[${currentPage}]],
+
+                      first: '<li class="first"><a href="javascript:void(0);">首页</a></li>',
+                      prev: '<li class="prev"><a href="javascript:void(0);">向前</a></li>',
+                      next: '<li class="next"><a href="javascript:void(0);">向后</a></li>',
+                      last: '<li class="last"><a href="javascript:void(0);">末页</a></li>',
+                      page: '<li class="page"><a href="javascript:void(0);">{{page}}</a></li>',
+                      onPageChange: function (page, type) {
+//                          $.get("/auditsys/files/show?pageNumber="+page);
+                          if(type == "init") return;
+                          $('#mainContentFrame', parent.document).attr('src', '/auditsys/files/show?pageNumber='+page);
+                      }
+                  });
+              </script>
+            </div>
 
             <div id="vsearchTable" class="box-body table-responsive" style="display: none;">
               <table id="example-basic-expandable2" class="table table-hover ">
@@ -251,124 +339,26 @@
 <script th:src="@{/plugins/JQueryZtree/jquery.ztree.core.min.js}"></script>
 <script th:src="@{/plugins/JQueryZtree/jquery.ztree.excheck.min.js}"></script>
 
-<script th:src="@{/plugins/bootstrap-table/bootstrap-table.min.js}"></script>
-<script th:src="@{/plugins/bootstrap-table/bootstrap-table-zh-CN.min.js}"></script>
-<script th:src="@{/plugins/bootstrap-table/treegrid/bootstrap-table-treegrid.js}"></script>
-<script src="https://cdn.bootcss.com/jquery-treegrid/0.2.0/js/jquery.treegrid.min.js"></script>
-
 <script th:src="@{/js/vue/vue.min.js}"></script>
+
+
+<script th:inline="javascript">
+
+    $("#example-basic-expandable").treetable({
+        expandable: true,
+        initialState: 'expanded'
+    });
+
+    // Highlight selected row
+    $("#example-basic-expandable tbody").on("mousedown", "tr", function() {
+        $(".selected").not(this).removeClass("selected");
+        $(this).toggleClass("selected");
+    });
+
+</script>
 
 <script th:inline="javascript">
   /*<![CDATA[*/
-
-  var TableInit = function () {
-      var oTableInit = new Object();
-      //初始化Table
-      oTableInit.Init = function () {
-          $('#dataTable').bootstrapTable({
-              url: $('#path').val()+'/files/load',         //请求后台的URL（*）
-              method: 'get',                      //请求方式（*）
-              toolbar: '#toolbar',                //工具按钮用哪个容器
-              striped: true,                      //是否显示行间隔色
-              cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
-              pagination: true,                   //是否显示分页（*）
-              uniqueId: 'id',
-              sortable: true,                     //是否启用排序
-              sortName: 'subDate',
-              sortOrder: "desc",                   //排序方式
-              queryParams: oTableInit.queryParams,//传递参数（*）
-              sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
-              pageNumber: 1,                       //初始化加载第一页，默认第一页
-              pageSize: 10,                       //每页的记录行数（*）
-              pageList: [10, 20, 50, 100],        //可供选择的每页的行数（*）
-              search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
-              contentType: "application/x-www-form-urlencoded",
-              strictSearch: true,
-              showColumns: true,                  //是否显示所有的列
-              showRefresh: true,                  //是否显示刷新按钮
-              minimumCountColumns: 2,             //最少允许的列数
-              clickToSelect: true,                //是否启用点击选中行
-//                height: 700,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
-              uniqueId: "no",                     //每一行的唯一标识，一般为主键列
-//                showToggle: true,                    //是否显示详细视图和列表视图的切换按钮
-              cardView: false,                    //是否显示详细视图
-              columns: [
-                  {
-                      checkbox: true
-                  }, {
-                      field: 'fileName',
-                      title: '文件名称',
-                      sortable : true,
-                      sortName: 'FILE_NAME'
-                  }, {
-                      field: 'fileType',
-                      title: '类型',
-                      sortable : true,
-                      sortName: 'FILE_TYPE'
-                  }, {
-                      field: 'fileSize',
-                      title: '大小',
-                      sortable : true,
-                      sortName: 'FILE_SIZE'
-                  }, {
-                      field: 'fileDesc',
-                      title: '描述',
-                      sortable : true,
-                      sortName: 'FILE_DESC'
-                  }, {
-                      field: 'submitterName',
-                      title: '创建者',
-                      sortable : true,
-                      sortName: 'FILE_SUBMITTER_NAME'
-                  },  {
-                      field: 'subDate',
-                      title: '创建日期',
-                      sortable : true,
-                      sortName: 'SUBMIT_DATE'
-                  }, {
-                      title: '操作',
-                      formatter:function(value, row, index){
-                          return '<a href=\"javascript:loadEntries('+ "'" + row.id + "'" + "," + "'" + row.id + "'" + ');\">查看细节条目</a>'
-                      }
-                  }
-              ],
-              // bootstrap-table-treegrid.js 插件配置
-              treeShowField: 'fileName',
-              parentIdField: 'pid',
-              onLoadSuccess: function(data) {
-                  console.log('load');
-                  // jquery.treegrid.js
-                  $('#dataTable').treegrid({
-                      // initialState: 'collapsed',
-                      treeColumn: 1,
-                      // expanderExpandedClass: 'glyphicon glyphicon-minus',
-                      // expanderCollapsedClass: 'glyphicon glyphicon-plus',
-                      onChange: function() {
-                          $('#dataTable').bootstrapTable('resetWidth');
-                      }
-                  });
-              }
-          });
-
-      };
-
-      //得到查询的参数
-      oTableInit.queryParams = function (params) {
-          var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
-              limit: params.limit,   //页面大小
-              offset: params.offset,
-              keyword: params.search,//搜索
-              sort: params.sort,//排序
-              order:params.order//排序字段
-          };
-          return temp;
-      };
-      return oTableInit;
-  };
-
-  var dataTable = new TableInit().Init();
-
-
   function showAddModal(parentFolderID) {
       $("#addFileModal").modal("show");
       $("#parentFolderID").val(parentFolderID);

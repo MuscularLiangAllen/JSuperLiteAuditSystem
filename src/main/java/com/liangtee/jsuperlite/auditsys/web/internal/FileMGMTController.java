@@ -1,9 +1,11 @@
 package com.liangtee.jsuperlite.auditsys.web.internal;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.liangtee.jsuperlite.auditsys.Annotation.AccessControl;
 import com.liangtee.jsuperlite.auditsys.model.FileInfo;
+import com.liangtee.jsuperlite.auditsys.model.HiddenProject;
 import com.liangtee.jsuperlite.auditsys.model.TmpFile;
 import com.liangtee.jsuperlite.auditsys.model.User;
 import com.liangtee.jsuperlite.auditsys.service.FileService;
@@ -44,17 +46,47 @@ public class FileMGMTController extends BaseController {
 
     @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_PROJ_CONTROCTOR)
     @RequestMapping(path = "show", method = RequestMethod.GET)
-    public String show(@RequestParam(name="pageNumber", required = false) Integer pageNumber, HttpServletRequest request, Model model) {
+    public String show(HttpServletRequest request, Model model) {
 
         User user = (User) request.getSession().getAttribute("user");
 
-        List<FileInfo> fileInfoList = fileService.findFilesByUser(user.getUID(), new PageModel(pageNumber == null ? 1 : pageNumber));
+//        List<FileInfo> fileInfoList = fileService.findFilesByUser(user.getUID(), new PageModel(pageNumber == null ? 1 : pageNumber));
 
-        model.addAttribute("totalCounts", fileService.count("PARENT_FOLDER_ID = ?", FileInfo.NO_PARENT_FOLDER));
-        model.addAttribute("fileInfoList", fileInfoList);
-        model.addAttribute("currentPage", pageNumber == null ? 1 : pageNumber);
+//        model.addAttribute("totalCounts", fileService.count("PARENT_FOLDER_ID = ?", FileInfo.NO_PARENT_FOLDER));
+//        model.addAttribute("fileInfoList", fileInfoList);
+//        model.addAttribute("currentPage", pageNumber == null ? 1 : pageNumber);
 
         return "content_pages/sys-files";
+    }
+
+    @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_DEPT_STUFF)
+    @RequestMapping(path = "load", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    public @ResponseBody String load(@RequestParam(name="limit", required = true) int limit,
+                                     @RequestParam(name="offset", required = true) int offset,
+                                     @RequestParam(name="sort", required = false) String sort,
+                                     @RequestParam(name="order", required = false) String order,
+                                     @RequestParam(name="keyword", required = false) String keyword,
+                                     HttpServletRequest request, Model model) {
+
+        PageModel pageModel = new PageModel(limit, (limit + offset)/limit);
+
+        List<FileInfo> fileInfoList = null;
+        if(keyword != null && !keyword.isEmpty()) {
+            keyword = "%" + keyword.trim() + "%";
+            fileInfoList = fileService.findFilesByUser(getOperator().getUID(), pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC, keyword);
+        } else {
+            fileInfoList = fileService.findFilesByUser(getOperator().getUID(), pageModel);
+        }
+
+        int totalSize = fileInfoList.size();
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("rows", fileInfoList);
+        jsonObject.put("total", totalSize);
+
+        System.out.println(jsonObject.toJSONString());
+
+        return jsonObject.toJSONString();
     }
 
     @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_PROJ_CONTROCTOR)

@@ -1,5 +1,6 @@
 package com.liangtee.jsuperlite.auditsys.model;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.liangtee.jsuperlite.auditsys.utils.TimeFormater;
 import org.springframework.data.annotation.*;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -23,6 +24,7 @@ public class FileInfo {
     @Id
     @org.springframework.data.annotation.Id
     @Column(name = "ID")
+    @JSONField(name = "id")
     private String UUID;
 
     @Column(name = "FILE_NAME", nullable = false)
@@ -59,6 +61,7 @@ public class FileInfo {
     private int isFolder;
 
     @Column(name = "PARENT_FOLDER_ID", nullable = false)
+    @JSONField(name = "pid")
     private String parentFolder;
 
     @Column(name = "EDITABLE", nullable = false)
