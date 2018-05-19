@@ -2,9 +2,6 @@ package com.liangtee.jsuperlite.auditsys.model;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.liangtee.jsuperlite.auditsys.utils.TimeFormater;
-import org.springframework.data.annotation.*;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
 
 import javax.persistence.*;
 import javax.persistence.Id;
@@ -18,13 +15,11 @@ import javax.persistence.Transient;
 
 @Entity
 @Table(name = "T_FILE_INFO")
-@Document(indexName = "jsuperliteauditsys", type = "fileinfo")
+//@Document(indexName = "jsuperliteauditsys", type = "fileinfo")
 public class FileInfo {
 
     @Id
-    @org.springframework.data.annotation.Id
     @Column(name = "ID")
-
     private String UUID;
 
     @JSONField(name = "id")
@@ -36,7 +31,7 @@ public class FileInfo {
     private int pSeq;
 
     @Column(name = "FILE_NAME", nullable = false)
-    @Field
+//    @Field
     private String fileName;
 
     @Column(name = "FILE_TYPE", nullable = false)
@@ -46,7 +41,7 @@ public class FileInfo {
     private long fileSize;
 
     @Column(name = "FILE_DESC", nullable = false)
-    @Field
+//    @Field
     private String fileDesc;
 
     @Column(name = "FILE_SUBMITTER_ID", nullable = false)
@@ -56,7 +51,7 @@ public class FileInfo {
     private String submitterName;
 
     @Column(name = "SUBMIT_DATE", nullable = false)
-    @Field
+//    @Field
     private String subDate;
 
     @Column(name = "BELONG_TO_PROJECT")
@@ -69,8 +64,11 @@ public class FileInfo {
     private int isFolder;
 
     @Column(name = "PARENT_FOLDER_ID", nullable = false)
-    @JSONField(name = "pid")
+//    @JSONField(name = "pid")
     private String parentFolder;
+
+    @Transient
+    private int childQty = 0;
 
     @Column(name = "EDITABLE", nullable = false)
     private int editable = EDITABLE;
@@ -262,5 +260,13 @@ public class FileInfo {
 
     public void setpSeq(int pSeq) {
         this.pSeq = pSeq;
+    }
+
+    public int getChildQty() {
+        return childQty;
+    }
+
+    public void setChildQty(int childQty) {
+        this.childQty = childQty;
     }
 }

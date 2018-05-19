@@ -3,391 +3,529 @@
 
 <head th:replace="/modules/header::css_library"></head>
 
-<link rel="stylesheet" th:href="@{/plugins/bootstrap-switch/bootstrap-switch.min.css}"/>
+<div th:replace="/modules/bottom::js_library"></div>
+
+<link rel="stylesheet" th:href="@{/plugins/bootstrap-table/bootstrap-table.min.css}"/>
+<link rel="stylesheet" th:href="@{/plugins/jquery-treegrid/css/jquery.treegrid.css}" />
+
+<script th:src="@{/plugins/fineuploader/fine-uploader.core.min.js}"></script>
+<script th:src="@{/plugins/fineuploader/fine-uploader.min.js}"></script>
+
+<script th:src="@{/plugins/jquery-treegrid/js/jquery.treegrid.js}"></script>
 
 <body class="hold-transition skin-blue sidebar-mini">
 
-    <section class="content-header">
-      <h1 style="font-family: 'Microsoft YaHei';">
-        用户管理
-        <small>User Management</small>
-      </h1>
-      <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
-        <li class="active">综合信息</li>
-      </ol>
+    <!-- Content Header (Page header) -->
+    <section class="content-header" style="border: 0px solid red; height: 50px; padding-top: 0px;">
+      <div class="row" style="padding-top: 10px; padding-bottom: 0px;">
+        <div class="col-lg-10 col-md-10">
+          <div class="col-lg-9 col-md-9">
+            <h3 style="font-family: 'Microsoft YaHei'; margin-top: 5px;">
+              用户管理
+              <small>User Management</small>
+            </h3>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-2">
+          <ol class="breadcrumb" style="background-color: #FFF; border: 0px solid green;">
+            <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
+            <li class="active">文件管理</li>
+          </ol>
+        </div>
+      </div>
     </section>
 
     <!-- Main content -->
     <section class="content">
+      <input id="rootpath" type="hidden" th:value="@{/}"></input>
       <input id="path" type="hidden" th:value="@{/auditsys}"></input>
-      <!-- Small boxes (Stat box) -->
-      <!-- /.row -->
+      <input id="totalCounts" type="hidden" th:value="${totalCounts}"></input>
       <!-- Main row -->
       <div class="row">
-        <!-- Left col -->
-        <section class="col-lg-10 col-md-12 connectedSortable">
-
+        <section class="col-md-12 col-lg-12">
           <div class="box box-primary">
             <div class="box-header">
-              <i class="ion ion-clipboard"></i>
-
-              <h3 class="box-title" style="font-family: 'Microsoft YaHei'; ">用户列表</h3>
-
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body table-responsive">
-              <table id="example-basic-expandable" class="table table-hover ">
-                <tbody>
-                  <thead>
-                    <tr style="background-color: #EEE;">
-                      <th>名称</th>
-                      <th>类型</th>
-                      <th>角色</th>
-                      <th>邮箱</th>
-                      <th>电话</th>
-                      <th>创建日期</th>
-                      <th>操作</th>
-                      <th>状态</th>
-                    </tr>
-                  </thead>
-                  <th:block th:each="org, status : ${orgList}">
-                    <tr th:attr="data-tt-id=${org.ID}, data-tt-parent-id=${org.belongTo}">
-                      <td th:id="${'orgname'+org.ID}" th:text="${org.orgName}">山东大学</td>
-                      <td th:text="${org.orgType}">学校</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td><a href="javascript:void(0);" th:onclick="${'showAddModal('+org.ID+')'}">添加用户</a></td>
-                      <td></td>
-                    </tr>
-                    <th:block th:if="${#maps.containsKey(userMap, org.ID)}">
-                      <th:block th:each="user, status : ${userMap[org.ID]}">
-                        <tr th:attr="data-tt-id=${'uid'+user.UID}, data-tt-parent-id=${user.deptID}" >
-                          <td><i class="fa fa-user"></i><th:block th:text="${' '+user.name}"></th:block></td>
-                          <td></td>
-                          <td th:text="${user.userTypeName}">超级管理员</td>
-                          <td th:text="${user.EMail}">liangtee@126.com</td>
-                          <td th:text="${user.phoneNumber}">13066000000</td>
-                          <td th:text="${user.createTime}">2017/5/1</td>
-                          <td><a href="javascript:void(0);" th:onclick="${'loadUserInfo('+user.UID+')'}">修改</a> / <a href="javascript:void(0);" th:onclick="${'deleteUser('+user.UID+')'}">删除</a></td>
-                          <th:block th:if="${user.isActive()} == true">
-                            <td style="color: #00B83F;">启用</td>
-                          </th:block>
-                          <th:block th:if="${user.isActive()}== false">
-                            <td style="color: #aa1111;">禁用</td>
-                          </th:block>
-                        </tr>
-                      </th:block>
-                    </th:block>
-                  </th:block>
-                </tbody>
-
-              </table>
-              <hr style="border-color: #CCCCCC;"/>
-              <div class="box-tools pull-right" style="margin-right: 10px;">
-                <ul class="pagination pagination-sm inline">
-                  <li><a href="#">&laquo;</a></li>
-                  <li><a href="#">1</a></li>
-                  <li><a href="#">2</a></li>
-                  <li><a href="#">3</a></li>
-                  <li><a href="#">&raquo;</a></li>
-                </ul>
+              <div id="toolbar" class="btn-group">
+                <button id="btn_add" type="button" class="btn btn-success" onclick="javascript:showAddModal('root');">
+                  <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span>添加顶级文件夹 (Add)
+                </button>
+                <button id="btn_delete" type="button" class="btn btn-danger" onclick="javascript:deleteItems();">
+                  <span class="glyphicon glyphicon-remove" aria-hidden="true" ></span>删除 (Delete)
+                </button>
               </div>
+              <table id="dataTable" class="data-table" style="white-space: nowrap;" width="100%"></table>
             </div>
-            <!-- /.box-body -->
-
           </div>
-          <!-- /.box -->
-
         </section>
       </div>
-      <!-- /.row (main row) -->
 
     </section>
-    <!-- /.content -->
 
-    <!-- Modal -->
-    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-      <div class="modal-dialog" role="document">
-        <div id="userInfo" class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <template v-if="userID == ''">
-              <h4 class="modal-title" id="myModalLabel" style="font-family: 'Microsoft YaHei';">新增用户</h4>
-            </template>
-            <template v-else="v-else">
-              <h4 class="modal-title" id="myModalLabel" style="font-family: 'Microsoft YaHei';">修改用户</h4>
-            </template>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <div class="row" style="margin-left:auto; margin-right:auto; width: 80%; ">
-              <div class="col-sm-12 col-md-12" style="float:left;">
-                <form id="vform">
-                <input type="hidden" id="orgID"></input>
-                <div class="form-group" style="margin-top: -6px; margin-left: 8px;">
-                  <label>所属机构:</label>
-                  <span id="n-orgname"></span><br></br>
+  <!-- Modal -->
+  <div class="modal fade" id="addFileModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div id="fileInfo" class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <template v-if="fileID == ''">
+            <h4 class="modal-title" style="font-family: 'Microsoft YaHei';">新建文件</h4>
+          </template>
+          <template v-else="v-else">
+            <h4 class="modal-title" style="font-family: 'Microsoft YaHei';">修改文件</h4>
+          </template>
+        </div>
+        <div class="modal-body" style="text-align: left;">
+          <div class="row" style="margin-left:auto; margin-right:auto; width: 80%; ">
+            <div class="col-sm-12 col-md-12" style="float:left;">
+              <form id="vform">
+                <input type="hidden" id="parentFolderID" />
+                <input type="hidden" id="tmpFileID"/>
+                <!--<input type="hidden" id="fileID"/>-->
+                <div class="form-group" style="margin-top: -6px;">
+                  <label style="color: red;">*</label><label>文件名称:</label>
+                  <input id="n-filename" v-model="fileName" name="fileName" type="text"  style="width: 80%;"></input><br></br>
                 </div>
-                <div class="form-group" style="margin-top: -10px;">
-                  <label style="color: red;">*</label><label>用&nbsp;&nbsp;户&nbsp;&nbsp;名:</label>
-                  <input v-model="userName" name="userName" type="text" style="width: 50%;"></input><br></br>
+                <!--<template v-if="fileID == ''">-->
+                <div id="fileTypeZone">
+                  <div class="form-group" style="margin-top: -10px;">
+                    <label style="color: red;">*</label><label>文件类型:</label>
+                    <input type="radio" name="fileType" checked="checked" value="folder" onclick="javascript:$('#fileUploadZone').hide('normal');"/>文件夹
+                    <input type="radio" name="fileType" value="file" onclick="javascript:$('#fileUploadZone').show('normal');"/>文件
+                  </div>
+                  <div id="fileUploadZone" class="form-group" style="margin-top: -5px; display: none;">
+                    <div id="fine-uploader">
+                    </div>
+                    <script type="text/template" id="qq-template">
+                      <div class="qq-uploader-selector qq-uploader">
+                        <div class="qq-upload-button-selector qq-upload-button">
+                          <div>上传附件</div>
+                        </div>
+                        <ul class="qq-upload-list-selector qq-upload-list">
+                          <li>
+                            <div class="qq-progress-bar-container-selector">
+                              <div class="qq-progress-bar-selector qq-progress-bar"></div>
+                            </div>
+                            <span class="qq-upload-spinner-selector qq-upload-spinner"></span>
+                            <span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>
+                            <span class="qq-upload-file-selector qq-upload-file" style="max-width: 250px;"></span>
+                            <span class="qq-upload-size-selector qq-upload-size"></span>
+                            <a class="qq-upload-cancel-selector qq-upload-cancel" href="#">放弃上传</a>
+                            <a class="qq-upload-retry-selector qq-upload-retry" href="#">重试</a>
+                            <a class="qq-upload-delete-selector qq-upload-delete" href="#">删除</a>
+                            <span class="qq-upload-status-text-selector qq-upload-status-text"></span>
+                          </li>
+                        </ul>
+                      </div>
+                    </script>
+                  </div>
                 </div>
-                <div class="form-group" style="margin-top: -10px;">
-                  <label style="color: red;">*</label><label>角&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;色:</label>
-                  <select v-model="roleCode" v-bind:value="roleCode" name="roleCode" style="width: 30%;">
-                    <option value="10">系统管理员</option>
-                    <option value="9">体验用户</option>
-                    <option value="8">内部审计员</option>
-                    <option value="7">外部审计员</option>
-                    <option value="6">部门主管</option>
-                    <option value="5">部门员工</option>
-                    <option value="4">合同承包方</option>
-                    <!--<option th:each="role : ${roleList}" th:value="${role.roleCode}" th:text="${role.roleDesc}">我我我</option>-->
-                  </select>
-                </div>
-                <div class="form-group" style="margin-top: -10px;">
-                  <label style="color: red;">*</label><label>密&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;码:</label>
-                  <input id="passwd" v-model="passwd" name="passwd" type="password" style="width: 50%;"></input><br></br>
-                </div>
-                <div class="form-group" style="margin-top: -10px;">
-                  <label style="color: red;">*</label><label>确认密码:</label>
-                  <input id="confirm_passwd" v-model="confirm_passwd" name="confirm_passwd" type="password" style="width: 50%;"></input><br></br>
-                </div>
-                <div class="form-group" style="margin-top: -10px;">
-                  <label style="color: red;">*</label><label>电&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;话:</label>
-                  <input v-model="userTel" name="userTel" type="text" style="width: 50%;"></input><br></br>
-                </div>
-                <div class="form-group" style="margin-top: -10px;">
-                  <label style="color: red;">*</label><label>邮&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;箱:</label>
-                  <input v-model="userMail" name="userMail" type="text" style="width: 50%;"></input><br></br>
-                </div>
+                <!--</template>-->
 
-                <label>&nbsp;&nbsp;账户状态:</label>&nbsp;
-                  <input id="status" type="checkbox" v-model="isActive" name="my-checkbox" checked="checked" data-size="small" data-on-text="启用" data-off-text="禁用" data-on-color="success" data-off-color="danger"/>
-                  <!--<input type="checkbox" name="my-checkbox"  data-size="small" data-on-text="启用" data-off-text="禁用" data-on-color="success" data-off-color="danger"/>-->
-                  <br></br><br></br>
+                <div class="form-group" style="margin-top: -10px;">
+                  <label style="color: red;">*</label><label>权限列表:</label>
+                  <button type="button" class="btn btn-success"  onclick="showACLModal();">添加可访问用户</button>
+                  <div style="color: #009900; margin-top: 5px;" id="ACLNames"></div>
+                </div>
+                <div class="form-group" style="margin-top: -5px; margin-left: 5px;">
+                  <label>描&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;述:</label>
+                  <input id="n-filedesc" v-model="fileDesc" name="filedesc" type="text" style="width: 80%;"></input><br></br>
+                </div>
+              </form>
 
-                <span style="color: red;">*项为必填项目</span>
-                </form>
-              </div>
+              <span style="color: red;">*项为必填项目</span>
+
             </div>
+          </div>
 
-          </div>
-          <div class="modal-footer">
-            <template v-if="userID == ''">
-              <button type="button" class="btn btn-primary" v-on:click="add">保&nbsp;&nbsp;存</button>
-            </template>
-            <template v-else="v-else">
-              <button type="button" class="btn btn-primary" v-on:click="update">修&nbsp;&nbsp;改</button>
-            </template>
-            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-          </div>
+        </div>
+        <div class="modal-footer">
+          <template v-if="fileID == ''">
+            <button type="button" class="btn btn-primary" v-on:click="add">保&nbsp;&nbsp;存</button>
+          </template>
+          <template v-if="fileID != ''">
+            <button type="button" class="btn btn-primary" v-on:click="update">修&nbsp;&nbsp;改</button>
+          </template>
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
         </div>
       </div>
     </div>
+  </div>
 
-<div th:replace="/modules/bottom::js_library"></div>
+  <!-- ACL Modal -->
+  <div th:replace="/modules/ACL::zTreeList"></div>
 
-<script th:src="@{/plugins/bootstrap-switch/bootstrap-switch.min.js}"></script>
+<script th:src="@{/plugins/JQueryZtree/jquery.ztree.core.min.js}"></script>
+<script th:src="@{/plugins/JQueryZtree/jquery.ztree.excheck.min.js}"></script>
+
+<script th:src="@{/plugins/bootstrap-table/bootstrap-table.min.js}"></script>
+<script th:src="@{/plugins/bootstrap-table/bootstrap-table-zh-CN.min.js}"></script>
+<script th:src="@{/plugins/bootstrap-table/treegrid/bootstrap-table-treegrid.js}"></script>
+
+
+<script th:src="@{/js/vue/vue.min.js}"></script>
 
 <script th:inline="javascript">
   /*<![CDATA[*/
 
-    function deleteUser(UID) {
-        var path = $("#path").val();
-        if(window.confirm("确定删除该用户?")){
-            $.ajax({
-                type: "POST",
-                url: path + "/users/delete",
-                data: {UID: UID},
-                success: function(result) {
-                    var res = eval(result)
-                    alert(res["message"]);
-                    window.location.reload();
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(errorThrown);
-                }
-            });
-        }
-        return;
-    }
+  var $table = $('.data-table');
 
-    function showAddModal(orgID) {
-        $("#addUserModal").modal("show");
-        $("#orgID").val(orgID);
-        $("#n-orgname").html($("#orgname"+orgID).html());
+  var TableInit = function () {
+      var oTableInit = new Object();
+      //初始化Table
+      oTableInit.Init = function () {
+          $('#dataTable').bootstrapTable({
+              url: $('#path').val()+'/users/load',         //请求后台的URL（*）
+              method: 'get',                      //请求方式（*）
+              toolbar: '#toolbar',                //工具按钮用哪个容器
+              striped: true,                      //是否显示行间隔色
+              cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+              pagination: true,                   //是否显示分页（*）
+              uniqueId: 'id',
+              sortable: true,                     //是否启用排序
+              queryParams: oTableInit.queryParams,//传递参数（*）
+              sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+              pageNumber: 1,                       //初始化加载第一页，默认第一页
+              pageSize: 10,                       //每页的记录行数（*）
+              pageList: [10, 20, 50, 100],        //可供选择的每页的行数（*）
+              search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+              contentType: "application/x-www-form-urlencoded",
+              strictSearch: true,
+              showColumns: true,                  //是否显示所有的列
+              showRefresh: true,                  //是否显示刷新按钮
+              minimumCountColumns: 2,             //最少允许的列数
+              clickToSelect: false,                //是否启用点击选中行
+//                height: 700,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+              uniqueId: "no",                     //每一行的唯一标识，一般为主键列
+//                showToggle: true,                    //是否显示详细视图和列表视图的切换按钮
+              cardView: false,                    //是否显示详细视图
+              columns: [
+                  {
+                      checkbox: true
+                  }, {
+                      field: 'name',
+                      title: '名称',
+                      sortable : true,
+                      sortName: 'USER_NAME',
+                      formatter:function(value, row, index) {
+                         if(row.userTypeName != '') return '<i class="fa fa-user"></i>&nbsp;'+value;
+                         return value;
+                      }
+                  }, {
+                      field: 'userType',
+                      title: '类型',
+                      sortable : true,
+                      sortName: 'USER_TYPE'
+                  }, {
+                      field: 'userTypeName',
+                      title: '角色',
+                      sortable : true,
+                      sortName: 'USER_TYPE_NAME'
+                  }, {
+                      field: 'EMail',
+                      title: '邮箱',
+                      sortName: 'EMAIL'
+                  }, {
+                      field: 'phoneNumber',
+                      title: '电话',
+                      sortName: 'PHONE_NUMBER'
+                  },  {
+                      field: 'createTime',
+                      title: '创建日期',
+                      sortable : true,
+                      sortName: 'CREATE_TIME'
+                  }, {
+                      field: 'isActive',
+                      title: '状态',
+                      sortName: 'CREATE_TIME'
+                  }, {
+                      title: '操作',
+                      formatter:function(value, row, index) {
+                          // return "<a href='/auditsys/files/download/'"+row.uUID + "'>下载</a>";
+                          if(row.fileType == '文件夹')
+                              return '<a class=\"btn btn-info btn-xs\" href=\"' + $('#path').val() + '/files/download/' + row.uUID + '\">下载</a>&nbsp;|&nbsp;' +
+                                  '<a class=\"btn btn-warning btn-xs\" href=\"javascript:loadFileInfo('+ "'" + row.uUID + "'" + ')\">修改</a>&nbsp;|&nbsp;' +
+                                      '<a class="btn btn-success btn-xs" href=\"javascript:void(0);\" onclick=\"showAddModal(' + "'" + row.uUID + "'" + ')\">添加</a>';
+                          else
+                            return '<a class=\"btn btn-info btn-xs\" href=\"' + $('#path').val() + '/files/download/' + row.uUID + '\">下载</a>&nbsp;|&nbsp;' +
+                                '<a class=\"btn btn-warning btn-xs\" href=\"javascript:loadFileInfo('+ "'" + row.uUID + "'" + ')\">修改</a>'
+                      }
+                  }
+              ],
+              // bootstrap-table-treegrid.js 插件配置
+              treeShowField: 'name',
+              parentIdField: 'pid',
+              onLoadSuccess: function(data) {
+                  // jquery.treegrid.js
+                  $table.treegrid({
+                      initialState: 'collapsed',
+                      treeColumn: 1,
+                      onChange: function() {
+                          $table.bootstrapTable('resetWidth');
+                      }
+                  });
+              }
+          });
 
-    }
+      };
 
-    jQuery.validator.setDefaults({
-        debug: true,
-        success: "valid"
-    });
+      //得到查询的参数
+      oTableInit.queryParams = function (params) {
+          var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+              limit: params.limit,   //页面大小
+              offset: params.offset,
+              keyword: params.search//搜索
+          };
+          return temp;
+      };
+      return oTableInit;
+  };
 
-    jQuery.validator.addMethod("isPhone", function(value, element) {
-        var length = value.length;
-        var mobile = /^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1}))+\d{8})$/;
-//      var tel = /^\d{3,4}-?\d{7,9}$/;
-        return this.optional(element) || mobile.test(value);
+  var dataTable = new TableInit().Init();
 
-    }, "请正确填写您的联系电话(手机)");
+  function deleteItems() {
+      var selectedRows = $('#dataTable').bootstrapTable('getSelections');
+      if(selectedRows == '') {
+          alert('请选择要删除的行');
+          return;
+      }
+      if(window.confirm('确定删除'+selectedRows.length+'条记录?')){
+          var uuids = '';
+          for(var i=0; i<selectedRows.length; i++) {
+              uuids += selectedRows[i].uUID+',';
+          }
+          $.ajax({
+              type: 'POST',
+              url: $('#path').val()+'/files/deleteSelections',
+              data: {uuids: uuids},
+              success: function(result) {
+                  var res = eval(result);
+                  alert(res['message']);
+                  $('#dataTable').bootstrapTable('refresh');
+              },
+              error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  alert(errorThrown);
+              }
+          });
+      }
+  }
 
-    var userInfo = new Vue({
-        el: '#userInfo',
-        data: {
-            userID: '',
-            userName: '',
-            roleCode: '',
-            passwd: '',
-            confirm_passwd: '',
-            userTel: '',
-            userMail: '',
-            orgID: '',
-            isActive: true
-        },
-        methods: {
-            validate: function () {
-                var errorSymbol = "<span style='color: red; font-size: 18px;'>&nbsp;x</span>";
-                var vform = $("#vform");
-                vform.validate({
-                    rules: {
-                        userName: {
-                            required: true,
-                            minlength: 6
-                        },
-                        passwd: {
-                            required: true,
-                            minlength: 8
-                        },
-                        confirm_passwd: {
-                            required: true,
-                        },
-                        roleCode: {
-                            required: true
-                        },
-                        userTel: {
-                            required: true,
-                            isPhone: true
-                        },
-                        userMail:{
-                            required: true,
-                            email: true
-                        }
-                    },
-                    messages: {
-                        userName: {
-                            required: errorSymbol,
-                            minlength: "<span style='color: red; font-size: 14px;'>&nbsp;用户名长度不能少于6位</span>"
-                        },
-                        passwd: {
-                            required: errorSymbol,
-                            minlength: "<span style='color: red; font-size: 14px;'>&nbsp;密码长度不能少于8位</span>"
-                        },
-                        confirm_passwd: {
-                            required: true,
-                            minlength: "<span style='color: red; font-size: 14px;'>&nbsp;密码长度不能少于8位</span>",
-//                            equalTo: "<span style='color: red; font-size: 14px;'>&nbsp;两次输入密码不一致</span>"
-                        },
-                        roleCode: {
-                            required: errorSymbol
-                        },
-                        userTel: {
-                            required: errorSymbol,
-                            isPhone: "<span style='color: red; font-size: 14px;'>&nbsp;手机号输入有误</span>"
-                        },
-                        userMail: {
-                            required: errorSymbol,
-                            email: "<span style='color: red; font-size: 14px;'>&nbsp;邮箱输入有误</span>"
-                        }
-                    }
-                });
-                return vform;
-            },
-            add: function () {
-                if(this.validate().valid() == false) {
-                    alert('数据项录入有误, 请按照提示修改');
-                    return;
-                }
-                var url = $('#path').val() + '/users/add';
-                var orgID = $('#orgID').val();
+  function showAddModal(parentFolderID) {
+      $("#addFileModal").modal("show");
+      $("#parentFolderID").val(parentFolderID);
+  }
 
-                $.ajax({
-                    type: "POST",
-                    url: url,
-                    data: {orgID: orgID, userName: this.userName, roleCode: this.roleCode, passwd: this.passwd, userTel: this.userTel, userMail: this.userMail, isActive: this.isActive},
-                    success: function(result) {
-                        var res = eval(result)
-                        alert(res["message"]);
-                        window.location.reload();
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        alert(errorThrown);
-                    }
-                });
-            },
-            update: function () {
-                if(this.validate().valid() == false) {
-                    alert('数据项录入有误, 请按照提示修改');
-                    return;
-                }
-                var url = $('#path').val() + '/users/update';
-                var orgID = $('#orgID').val();
+  jQuery.validator.setDefaults({
+      debug: true,
+      success: "valid"
+  });
 
-                $.ajax({
-                    type: "POST",
-                    url: url,
-                    data: {userID: this.userID, orgID: orgID, userName: this.userName, roleCode: this.roleCode, passwd: this.passwd, userTel: this.userTel, userMail: this.userMail, isActive: this.isActive},
-                    success: function(result) {
-                        var res = eval(result)
-                        alert(res["message"]);
-                        window.location.reload();
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        alert(errorThrown);
-                    }
-                });
-            }
-        }
-    });
+  var fileInfo = new Vue({
+      el: '#fileInfo',
+      data: {
+          fileID: '',
+          fileName: '',
+          fileType: '',
+          fileDesc: ''
+      },
+      watch: {
+          fileID: function(val, oldVal) {
+              if (val == '') {
+                  $('#fileTypeZone').show();
+              }
+              if (val != '') {
+                  $('#fileTypeZone').hide();
+              }
+          }
+      },
+      methods: {
+          validate: function () {
+              var errorSymbol = "<span style='color: red; font-size: 18px;'>&nbsp;x</span>";
+              var vform = $("#vform");
+              vform.validate({
+                  rules: {
+                      fileName: {
+                          required: true,
+                          minlength: 4
+                      }
+                  },
+                  messages: {
+                      fileName: {
+                          required: errorSymbol,
+                          minlength: "<span style='color: red; font-size: 14px;'>&nbsp;文件名长度不能少于4个字符</span>"
+                      }
+                  }
+              });
+              return vform;
+          },
+          add: function () {
+              if(this.validate().valid() == false) {
+                  alert('数据项录入有误, 请按照提示修改');
+                  return;
+              }
+              var url = $('#path').val() + '/files/add'
+              var parentfolderID = $("#parentFolderID").val();
+              var filetype = $('input:radio[name="fileType"]:checked').val();
+              var grantedusers = $("#selectedIDs").val();
+              var tmpFileID = $("#tmpFileID").val();
 
-    function loadUserInfo(userID) {
-        var url = $('#path').val() + '/users/get'
-        $.ajax({
-            type: "POST",
-            url: url,
-            data: {userID: userID},
-            success: function(result) {
-                var user = eval(result);
-                userInfo.userName = user.name;
-                userInfo.passwd = user.passwd;
-                userInfo.confirm_passwd = user.passwd;
-                userInfo.roleCode = user.userType;
-                userInfo.userTel = user.phoneNumber;
-                userInfo.userMail = user.eMail;
-                userInfo.orgID = user.deptID;
-                userInfo.isActive = user.active;
-                userInfo.userID = user.uID;
-                $('#orgID').val(user.deptID);
+              if(filetype == 'file' && tmpFileID == '') {
+                  alert('请上传文件');
+                  return;
+              }
+              if(grantedusers == '') {
+                  alert('请选择可访问用户');
+                  return;
+              }
 
-                if(userInfo.isActive == false) {
-                    $("[name='my-checkbox']").bootstrapSwitch('state', false, false);
-                }
+              $.ajax({
+                  type: "POST",
+                  url: url,
+                  data: {filename: this.fileName, filetype: filetype, filedesc: this.fileDesc, parentfolderID: parentfolderID,
+                      grantedusers: grantedusers, tmpFileID:tmpFileID},
+                  success: function(result) {
+                      var res =  eval("("+result+")");
+                      alert(res["message"]);
+                      window.location.reload();
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          },
+          update: function () {
+              if(this.validate().valid() == false) {
+                  alert('数据项录入有误, 请按照提示修改');
+                  return;
+              }
+              var url = $('#path').val() + '/files/update'
+              var grantedusers = $("#selectedIDs").val();
 
-                showAddModal(userInfo.orgID);
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                alert(errorThrown);
-            }
-        });
-    }
+              if(grantedusers == '') {
+                  alert('请选择可访问用户');
+                  return;
+              }
 
-  $('#addUserModal').on('hidden.bs.modal', function () {
+              $.ajax({
+                  type: "POST",
+                  url: url,
+                  data: {fileID: this.fileID, filename: this.fileName, filedesc: this.fileDesc, grantedusers: grantedusers},
+                  success: function(result) {
+                      var res =  eval("("+result+")");
+                      alert(res["message"]);
+                      window.location.reload();
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          },
+          clear: function () {
+              this.fileID = '';
+              this.fileName = '';
+              this.fileDesc = '';
+          }
+      }
+  });
+
+  function loadFileInfo(fileID) {
+      var path = $("#path").val();
+      $.ajax({
+          type: "POST",
+          url: path + "/files/get",
+          data: {fileID: fileID},
+          success: function(result) {
+              var file =  eval("("+result+")");
+              fileInfo.fileID = file.uUID;
+              fileInfo.fileName = file.fileName;
+              fileInfo.fileDesc = file.fileDesc
+              showAddModal(file.parentFolder);
+          },
+          error: function (XMLHttpRequest, textStatus, errorThrown) {
+              alert(errorThrown);
+          }
+      });
+  }
+
+  function deleteFileByID(fileID) {
+      var path = $("#path").val();
+      if(window.confirm("确定删除该文件?")){
+          $.ajax({
+              type: "POST",
+              url: path + "/files/delete",
+              data: {fileID: fileID},
+              success: function(result) {
+                  var res = eval(result)
+                  alert(res["message"]);
+                  window.location.reload();
+              },
+              error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  alert(errorThrown);
+              }
+          });
+      }
+      return;
+  }
+
+  function saveACL(){
+      $("#ACLNames").html("可访问用户: "+$("#selectedNames").val());
+      $('#ACLModal').modal('hide')
+      return;
+  }
+
+  function deleteFile(fileID) {
+      var path = $("#path").val();
+      if(window.confirm("确定删除该项目?")){
+          $.ajax({
+              type: "POST",
+              url: path + "/files/delete",
+              data: {fileID: fileID},
+              success: function(result) {
+                  var res = eval(result)
+                  alert(res["message"]);
+                  window.location.reload();
+              },
+              error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  alert(errorThrown);
+              }
+          });
+      }
+      return;
+  }
+
+  var uploader = new qq.FineUploader({
+      debug: true,
+      multiple: false,
+      element: document.getElementById('fine-uploader'),
+      validation: {
+          allowedExtensions: ['jpeg', 'jpg', 'gif', 'png','bmp','xls','doc','ppt','xlsx','docx','pptx',
+              'pdf','txt','zip','rar','mp4','avi','rmvb','flv'],
+          sizeLimit: 200*1024*1024 // 200MB.
+      },
+      request: {
+          endpoint: '/auditsys/files/upload'
+      },
+      deleteFile: {
+          enabled: true,
+          forceConfirm: true,
+          confirmMessage: '确定要删除文件 {filename} 吗?',
+          deletingFailedText: '删除失败!',
+          endpoint: '/auditsys/files/delete_tmp'
+      },
+      retry: {
+          enableAuto: true
+      },
+      callbacks: {
+          onComplete: function(id, failIDs, responseJSON)  {
+              $("#tmpFileID").val(responseJSON.newUuid);
+          }
+
+      }
+  });
+
+  $('#addFileModal').on('hidden.bs.modal', function () {
+      fileInfo.clear();
       clearForm($('#vform'));
       $('#vform').validate().resetForm();
-      $("[name='my-checkbox']").bootstrapSwitch('state', true, true);
   });
 
   function clearForm(form) {
@@ -396,29 +534,13 @@
           var type = this.type;
           var tag = this.tagName.toLowerCase(); // normalize case
           if (type == 'text' || type == 'password' || tag == 'textarea')
-              this.value = "";
+              this.value = '';
           // 多选checkboxes清空
           // select 下拉框清空
           else if (tag == 'select')
               this.selectedIndex = -1;
       });
   };
-
-    $("#example-basic-expandable").treetable({
-        expandable: true,
-        initialState: 'expanded'
-    });
-
-    // Highlight selected row
-    $("#example-basic-expandable tbody").on("mousedown", "tr", function() {
-        $(".selected").not(this).removeClass("selected");
-        $(this).toggleClass("selected");
-    });
-
-    $("[name='my-checkbox']").bootstrapSwitch();
-    $('input[name="my-checkbox"]').on('switchChange.bootstrapSwitch', function(event, state) {
-        userInfo.isActive = state;
-    });
 
   /*]]>*/
 </script>

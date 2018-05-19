@@ -11,7 +11,6 @@
 <script th:src="@{/plugins/fineuploader/fine-uploader.core.min.js}"></script>
 <script th:src="@{/plugins/fineuploader/fine-uploader.min.js}"></script>
 
-<!--<script src="https://cdn.bootcss.com/jquery-treegrid/0.2.0/js/jquery.treegrid.min.js"></script>-->
 <script th:src="@{/plugins/jquery-treegrid/js/jquery.treegrid.js}"></script>
 
 <body class="hold-transition skin-blue sidebar-mini">
@@ -43,11 +42,11 @@
       <input id="totalCounts" type="hidden" th:value="${totalCounts}"></input>
       <!-- Main row -->
       <div class="row">
-        <section class="col-md-12 col-lg-12 connectedSortable">
+        <section class="col-md-12 col-lg-12">
           <div class="box box-primary">
             <div class="box-header">
               <div id="toolbar" class="btn-group">
-                <button id="btn_add" type="button" class="btn btn-success" onclick="javascript:showVisaModal();">
+                <button id="btn_add" type="button" class="btn btn-success" onclick="javascript:showAddModal('root');">
                   <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span>添加顶级文件夹 (Add)
                 </button>
                 <button id="btn_delete" type="button" class="btn btn-danger" onclick="javascript:deleteItems();">
@@ -56,76 +55,9 @@
               </div>
               <table id="dataTable" class="data-table" style="white-space: nowrap;" width="100%"></table>
             </div>
-
-            <div id="vsearchTable" class="box-body table-responsive" style="display: none;">
-              <table id="example-basic-expandable2" class="table table-hover ">
-                <tbody>
-                <thead>
-                <tr style="background-color: #EEE;">
-                  <th>文件名称</th>
-                  <th>类型</th>
-                  <th>大小</th>
-                  <th>描述</th>
-                  <th>创建者</th>
-                  <th>创建日期</th>
-                  <th>操作</th>
-                </tr>
-                </thead>
-
-                <tr style="display: none;">
-                  <td><i class="fa fa-folder-open"></i> xxx</td>
-                  <td>xxx</td>
-                  <td>xxx</td>
-                  <td>xxx</td>
-                  <td>xxx</td>
-                  <td>xxx</td>
-                  <td>
-                    <a href="#">修改</a> / <a href="javascript:void(0);">删除</a> / <a>下载</a></td>
-                </tr>
-
-
-                <template v-for="file in fileList">
-                  <tr v-bind:data-tt-id="file.uUID" v-bind:data-tt-parent-id="file.parentFolder">
-                  <td><i class="fa fa-folder-open"></i> {{file.fileName}}</td>
-                  <td>{{file.fileType}}</td>
-                  <td v-if="file.isFolder === 1"></td>
-                  <td v-if="file.isFolder === 0">
-                    <template v-if="file.fileSize &lt; 1024">
-                      {{(file.fileSize/1024).toFixed(0) + 'KB'}}
-                    </template>
-                    <template v-if="file.fileSize > 1024">
-                    {{(file.fileSize/1024).toFixed(0) + 'KB'}}
-                    </template>
-                    <template v-if="file.fileSize > 1024*1024">
-                      {{(file.fileSize/1024).toFixed(0) + 'KB'}}
-                    </template>
-                  </td>
-                  <td>{{file.fileDesc}}</td>
-                  <td>{{file.submitterName}}</td>
-                  <td>{{file.subDate}}</td>
-                  <td><a href="#">修改</a> / <a href="#">删除</a> / <a v-bind:href="'/auditsys/files/download/'+file.uUID">下载</a></td>
-                  </tr>
-                </template>
-
-                </tbody>
-
-              </table>
-              <hr style="border-color: #CCCCCC;"/>
-            </div>
-
-
-            <!-- /.box-body -->
-
           </div>
-          <!-- /.box -->
-
         </section>
-        <!-- /.Left col -->
-        <!-- right col (We are only adding the ID to make the widgets sortable)-->
-
-        <!-- right col -->
       </div>
-      <!-- /.row (main row) -->
 
     </section>
 
@@ -222,6 +154,9 @@
   <!-- ACL Modal -->
   <div th:replace="/modules/ACL::zTreeList"></div>
 
+<script th:src="@{/plugins/JQueryZtree/jquery.ztree.core.min.js}"></script>
+<script th:src="@{/plugins/JQueryZtree/jquery.ztree.excheck.min.js}"></script>
+
 <script th:src="@{/plugins/bootstrap-table/bootstrap-table.min.js}"></script>
 <script th:src="@{/plugins/bootstrap-table/bootstrap-table-zh-CN.min.js}"></script>
 <script th:src="@{/plugins/bootstrap-table/treegrid/bootstrap-table-treegrid.js}"></script>
@@ -260,7 +195,7 @@
               showColumns: true,                  //是否显示所有的列
               showRefresh: true,                  //是否显示刷新按钮
               minimumCountColumns: 2,             //最少允许的列数
-              clickToSelect: true,                //是否启用点击选中行
+              clickToSelect: false,                //是否启用点击选中行
 //                height: 700,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
               uniqueId: "no",                     //每一行的唯一标识，一般为主键列
 //                showToggle: true,                    //是否显示详细视图和列表视图的切换按钮
@@ -272,7 +207,12 @@
                       field: 'fileName',
                       title: '文件名称',
                       sortable : true,
-                      sortName: 'FILE_NAME'
+                      sortName: 'FILE_NAME',
+                      formatter:function(value, row, index) {
+                         if(row.fileType != '文件夹') return '<i class="fa fa-file-text-o"></i>&nbsp;'+value;
+                         if(row.childQty == 0) return '<i class="fa fa-folder-o"></i>&nbsp;'+value;
+                         return value;
+                      }
                   }, {
                       field: 'fileType',
                       title: '类型',
@@ -282,7 +222,14 @@
                       field: 'fileSize',
                       title: '大小',
                       sortable : true,
-                      sortName: 'FILE_SIZE'
+                      sortName: 'FILE_SIZE',
+                      formatter:function(value, row, index) {
+                          if(value == 0) return '';
+                          if(value < 1024 ) return value +'B';
+                          if(value > 1024) return (value/1024).toFixed(0) + 'KB';
+                          if(value > 1024*1024) return (value/(1024*1024)).toFixed(0) + 'MB';
+                          return value;
+                      }
                   }, {
                       field: 'fileDesc',
                       title: '描述',
@@ -301,7 +248,14 @@
                   }, {
                       title: '操作',
                       formatter:function(value, row, index) {
-                          return '<a href=\"javascript:loadEntries('+ "'" + row.id + "'" + "," + "'" + row.id + "'" + ');\">查看细节条目</a>'
+                          // return "<a href='/auditsys/files/download/'"+row.uUID + "'>下载</a>";
+                          if(row.fileType == '文件夹')
+                              return '<a class=\"btn btn-info btn-xs\" href=\"' + $('#path').val() + '/files/download/' + row.uUID + '\">下载</a>&nbsp;|&nbsp;' +
+                                  '<a class=\"btn btn-warning btn-xs\" href=\"javascript:loadFileInfo('+ "'" + row.uUID + "'" + ')\">修改</a>&nbsp;|&nbsp;' +
+                                      '<a class="btn btn-success btn-xs" href=\"javascript:void(0);\" onclick=\"showAddModal(' + "'" + row.uUID + "'" + ')\">添加</a>';
+                          else
+                            return '<a class=\"btn btn-info btn-xs\" href=\"' + $('#path').val() + '/files/download/' + row.uUID + '\">下载</a>&nbsp;|&nbsp;' +
+                                '<a class=\"btn btn-warning btn-xs\" href=\"javascript:loadFileInfo('+ "'" + row.uUID + "'" + ')\">修改</a>'
                       }
                   }
               ],
@@ -309,13 +263,12 @@
               treeShowField: 'fileName',
               parentIdField: 'pid',
               onLoadSuccess: function(data) {
-                  console.log('load');
                   // jquery.treegrid.js
                   $table.treegrid({
-                      // initialState: 'collapsed',
+                      initialState: 'collapsed',
                       treeColumn: 1,
-                      // expanderExpandedClass: 'glyphicon glyphicon-minus',
-                      // expanderCollapsedClass: 'glyphicon glyphicon-plus',
+                      expanderExpandedClass: 'fa fa-folder-open',
+                      expanderCollapsedClass: 'fa fa-folder',
                       onChange: function() {
                           $table.bootstrapTable('resetWidth');
                       }
@@ -341,6 +294,32 @@
 
   var dataTable = new TableInit().Init();
 
+  function deleteItems() {
+      var selectedRows = $('#dataTable').bootstrapTable('getSelections');
+      if(selectedRows == '') {
+          alert('请选择要删除的行');
+          return;
+      }
+      if(window.confirm('确定删除'+selectedRows.length+'条记录?')){
+          var uuids = '';
+          for(var i=0; i<selectedRows.length; i++) {
+              uuids += selectedRows[i].uUID+',';
+          }
+          $.ajax({
+              type: 'POST',
+              url: $('#path').val()+'/files/deleteSelections',
+              data: {uuids: uuids},
+              success: function(result) {
+                  var res = eval(result);
+                  alert(res['message']);
+                  $('#dataTable').bootstrapTable('refresh');
+              },
+              error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  alert(errorThrown);
+              }
+          });
+      }
+  }
 
   function showAddModal(parentFolderID) {
       $("#addFileModal").modal("show");
@@ -504,56 +483,6 @@
       $('#ACLModal').modal('hide')
       return;
   }
-
-  var vsearchTable = new Vue({
-      el: '#vsearchTable',
-      data: {
-          fileList: ''
-      },
-      updated: function () {
-          $('#vsearchTable').show();
-      }
-  });
-
-  var vsearch = new Vue({
-      el: '#vsearch',
-      data: {
-          keyword: '',
-      },
-      watch: {
-        keyword: function(val, oldVal) {
-            if (val == "") {
-                $('#vsearchTable').hide();
-            }
-        }
-      },
-      methods: {
-          search: function () {
-              var path = $("#path").val();
-              var url = path + '/files/search';
-              $.ajax({
-                  type: 'POST',
-                  url: url,
-                  data: {keyword: this.keyword},
-                  success: function(result) {
-                      var res = eval(result);
-                      vsearchTable.fileList = res;
-                  },
-                  error: function (XMLHttpRequest, textStatus, errorThrown) {
-                      alert(errorThrown);
-                  }
-              });
-          }
-      }
-  });
-
-  $("#example-basic-expandable2").treetable({ expandable: true });
-
-  // Highlight selected row
-  $("#example-basic-expandable2 tbody").on("mousedown", "tr", function() {
-      $(".selected").not(this).removeClass("selected");
-      $(this).toggleClass("selected");
-  });
 
   function deleteFile(fileID) {
       var path = $("#path").val();

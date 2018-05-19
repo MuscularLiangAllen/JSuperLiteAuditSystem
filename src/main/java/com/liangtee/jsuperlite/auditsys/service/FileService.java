@@ -13,7 +13,6 @@ import com.liangtee.jsuperlite.auditsys.service.base.PageModel;
 import com.liangtee.jsuperlite.auditsys.service.base.QueryHelper;
 import com.liangtee.jsuperlite.auditsys.utils.FileUtils;
 import com.liangtee.jsuperlite.auditsys.utils.TimeFormater;
-import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -43,7 +42,7 @@ public class FileService extends BaseService<FileInfo, String> {
 
     private TmpFileRepository tmpFileRepository;
 
-    private ESFileRepository esFileRepository;
+//    private ESFileRepository esFileRepository;
 
     @Autowired
     private QueryHelper queryHelper;
@@ -58,33 +57,32 @@ public class FileService extends BaseService<FileInfo, String> {
     @Autowired
     public FileService(JdbcTemplate jdbcTemplate, FileRepository fileRepository,
                        FileToUserRepository fileToUserRepository,
-                       TmpFileRepository tmpFileRepository,
-                       ESFileRepository esFileRepository) {
+                       TmpFileRepository tmpFileRepository) {
         super(jdbcTemplate);
         this.fileRepository = fileRepository;
         this.fileToUserRepository = fileToUserRepository;
         this.tmpFileRepository = tmpFileRepository;
-        this.esFileRepository = esFileRepository;
+//        this.esFileRepository = esFileRepository;
     }
 
     public long count() {
         return fileRepository.count();
     }
 
-    public List<FileInfo> search(String keyWord) {
-        List<FileInfo> searchResult = new ArrayList<FileInfo>();
-        esFileRepository.search(new QueryStringQueryBuilder(keyWord)).forEach(f -> searchResult.add(f));
-
-        return searchResult;
-    }
+//    public List<FileInfo> search(String keyWord) {
+//        List<FileInfo> searchResult = new ArrayList<FileInfo>();
+//        esFileRepository.search(new QueryStringQueryBuilder(keyWord)).forEach(f -> searchResult.add(f));
+//
+//        return searchResult;
+//    }
 
     public FileInfo add(FileInfo fileInfo) {
-        esFileRepository.save(fileInfo);
+//        esFileRepository.save(fileInfo);
         return fileRepository.save(fileInfo);
     }
 
     public boolean update(FileInfo fileInfo, String grantedIDs) {
-        esFileRepository.save(fileInfo);
+//        esFileRepository.save(fileInfo);
         FileInfo file;
         if((file = fileRepository.save(fileInfo)) != null) {
             List<Long> IDList = new ArrayList<Long>();
@@ -132,7 +130,7 @@ public class FileService extends BaseService<FileInfo, String> {
             if(deletedFile.getIsFolder() != FileInfo.FOLDER_TYPE) {
                 //move to trash folder
                 if(FileUtils.moveTo(deletedFile.getFilePath(), System.getProperty("sys.trash") + PATH_SEPARATOR + deletedFile.getFileName())) {
-                    esFileRepository.delete(fileID);
+//                    esFileRepository.delete(fileID);
                     fileRepository.delete(fileID);
                 }
 
@@ -141,10 +139,10 @@ public class FileService extends BaseService<FileInfo, String> {
                 //move to trash folder
                 FileUtils.moveTo(deletedFile.getFilePath(), System.getProperty("sys.trash") + PATH_SEPARATOR + deletedFile.getFileName());
                 findAll("PARENT_FOLDER_ID = ?", fileID).forEach(f -> {
-                    esFileRepository.delete(f.getUUID());
+//                    esFileRepository.delete(f.getUUID());
                     fileRepository.delete(f.getUUID());
                 });
-                esFileRepository.delete(fileID);
+//                esFileRepository.delete(fileID);
                 fileRepository.delete(fileID);
 
             }
@@ -198,6 +196,8 @@ public class FileService extends BaseService<FileInfo, String> {
             for(int j=0; j<childNodes.size(); j++) {
                 childNodes.get(j).setSeq(i++);
                 childNodes.get(j).setpSeq(fileInfo.getSeq());
+                fileInfo.setChildQty(fileInfo.getChildQty()+1);
+                queue.add(childNodes.get(j));
             }
             int parentIndex = result.indexOf(fileInfo);
             result.addAll(parentIndex+1, childNodes);
@@ -234,6 +234,8 @@ public class FileService extends BaseService<FileInfo, String> {
                 for(int j=0; j<childNodes.size(); j++) {
                     childNodes.get(j).setSeq(i++);
                     childNodes.get(j).setpSeq(fileInfo.getSeq());
+                    fileInfo.setChildQty(fileInfo.getChildQty()+1);
+                    queue.add(childNodes.get(j));
                 }
                 int parentIndex = result.indexOf(fileInfo);
                 result.addAll(parentIndex+1, childNodes);

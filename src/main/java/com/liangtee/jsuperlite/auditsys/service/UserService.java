@@ -1,8 +1,11 @@
 package com.liangtee.jsuperlite.auditsys.service;
 
+import com.alibaba.fastjson.JSONObject;
+import com.liangtee.jsuperlite.auditsys.model.Organization;
 import com.liangtee.jsuperlite.auditsys.model.User;
 import com.liangtee.jsuperlite.auditsys.repository.UserRepository;
 import com.liangtee.jsuperlite.auditsys.service.base.BaseService;
+import com.liangtee.jsuperlite.auditsys.service.base.PageModel;
 import com.liangtee.jsuperlite.auditsys.utils.MD5Encoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Allen on 2017/4/18.
@@ -65,6 +69,37 @@ public class UserService extends BaseService<User, Long> {
         }
 
         return userMap;
+    }
+
+    public Map<Integer, List<User>> groupByDeptID(PageModel pageModel, String sortProperty, int sequence, String conditions, Object ...params) {
+        return findByPage(pageModel, sortProperty, sequence, conditions, params).
+                stream().collect(Collectors.groupingBy(User::getDeptID));
+    }
+
+    public List<Object> getUserTree(PageModel pageModel, List<Organization> organizations, String conditions, Object ...params) {
+        List<Object> result = null;
+        if(organizations != null) {
+            result = new LinkedList<Object>();
+            Map<Integer, List<User>> userMap = groupByDeptID(pageModel, "CREATE_TIME", ASC, conditions, params);
+            for(Organization org : organizations) {
+                if (userMap.containsKey(org.getID())) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("name", org.getOrgName());
+                    jsonObject.put("userTypeName", "");
+                    jsonObject.put("EMail", "");
+                    jsonObject.put("phoneNumber", "");
+                    jsonObject.put("createTime", "");
+                    jsonObject.put("isActive", "");
+                    jsonObject.put("type", org.getOrgType());
+                    jsonObject.put("id", org.getID());
+                    jsonObject.put("pid", org.getBelongTo() == -1 ? 0 : org.getBelongTo());
+                    result.add(jsonObject);
+                    result.addAll(userMap.get(org.getID()));
+                }
+            }
+        }
+
+        return result;
     }
 
     public List<User> findAll() {

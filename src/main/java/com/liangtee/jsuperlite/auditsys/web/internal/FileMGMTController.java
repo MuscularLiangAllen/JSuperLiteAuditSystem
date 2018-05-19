@@ -4,12 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.liangtee.jsuperlite.auditsys.Annotation.AccessControl;
-import com.liangtee.jsuperlite.auditsys.model.FileInfo;
-import com.liangtee.jsuperlite.auditsys.model.HiddenProject;
-import com.liangtee.jsuperlite.auditsys.model.TmpFile;
-import com.liangtee.jsuperlite.auditsys.model.User;
+import com.liangtee.jsuperlite.auditsys.model.*;
 import com.liangtee.jsuperlite.auditsys.service.FileService;
 import com.liangtee.jsuperlite.auditsys.service.base.PageModel;
+import com.liangtee.jsuperlite.auditsys.service.base.QueryHelper;
 import com.liangtee.jsuperlite.auditsys.utils.*;
 import com.liangtee.jsuperlite.auditsys.values.UserConfs;
 import com.liangtee.jsuperlite.auditsys.values.json.ReturnMessage;
@@ -44,17 +42,14 @@ public class FileMGMTController extends BaseController {
     @Autowired
     FileService fileService;
 
+    @Autowired
+    QueryHelper queryHelper;
+
     @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_PROJ_CONTROCTOR)
     @RequestMapping(path = "show", method = RequestMethod.GET)
     public String show(HttpServletRequest request, Model model) {
 
         User user = (User) request.getSession().getAttribute("user");
-
-//        List<FileInfo> fileInfoList = fileService.findFilesByUser(user.getUID(), new PageModel(pageNumber == null ? 1 : pageNumber));
-
-//        model.addAttribute("totalCounts", fileService.count("PARENT_FOLDER_ID = ?", FileInfo.NO_PARENT_FOLDER));
-//        model.addAttribute("fileInfoList", fileInfoList);
-//        model.addAttribute("currentPage", pageNumber == null ? 1 : pageNumber);
 
         return "content_pages/sys-files";
     }
@@ -78,7 +73,8 @@ public class FileMGMTController extends BaseController {
             fileInfoList = fileService.findFilesByUser(getOperator().getUID(), pageModel);
         }
 
-        int totalSize = fileInfoList.size();
+//        int totalSize = fileInfoList.size();
+        long totalSize = fileInfoList.stream().filter(f -> f.getpSeq() == 0).count();
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("rows", fileInfoList);
@@ -86,21 +82,19 @@ public class FileMGMTController extends BaseController {
 
         System.out.println(jsonObject.toJSONString());
 
-//        return "{\"total\":4,\"rows\":[{\"belongToProjectID\":\"XM20180517134628\",\"editable\":0,\"fileDesc\":\"测试项目1\",\"fileName\":\"20180517测试项目1\",\"filePath\":\"C:\\\\Users\\\\allen\\\\AuditSys_FS\\\\workplace\\\\20180517测试项目1\",\"fileSize\":0,\"fileType\":\"文件夹\",\"id\":\"a02e5a4e84c64a86944fe34d36a6ffcc\",\"isFolder\":1,\"pid\":\"NPF\",\"subDate\":\"2018/05/17 13:46:28\",\"submitterID\":170920153644,\"submitterName\":\"kingroot\"},{\"belongToProjectID\":\"XM20180517134628\",\"editable\":0,\"fileDesc\":\"用于存放本工程全部工程节点材料\",\"fileName\":\"工程节点\",\"filePath\":\"C:\\\\Users\\\\allen\\\\AuditSys_FS\\\\workplace\\\\20180517测试项目1\\\\工程节点\",\"fileSize\":0,\"fileType\":\"文件夹\",\"id\":\"18b109a1-126b-478a-85b8-889ddc1c6e85\",\"isFolder\":1,\"pid\":\"a02e5a4e84c64a86944fe34d36a6ffcc\",\"subDate\":\"2018/05/17 13:46:29\",\"submitterID\":170920153644,\"submitterName\":\"kingroot\"},{\"belongToProjectID\":\"XM20180517134628\",\"editable\":0,\"fileDesc\":\"测试项目1\",\"fileName\":\"测试项目1-施工主要材料明细表.xls\",\"filePath\":\"C:\\\\Users\\\\allen\\\\AuditSys_FS\\\\workplace\\\\20180517测试项目1\\\\测试项目1-施工主要材料明细表.xls\",\"fileSize\":25600,\"fileType\":\"xls\",\"id\":\"7f455e36f175455ebdb6c2788cd66711\",\"isFolder\":0,\"pid\":\"a02e5a4e84c64a86944fe34d36a6ffcc\",\"subDate\":\"2018/05/17 13:46:29\",\"submitterID\":170920153644,\"submitterName\":\"kingroot\"},{\"belongToProjectID\":\"XM20180517134628\",\"editable\":0,\"fileDesc\":\"用于存放本工程全部工程签证\",\"fileName\":\"工程签证\",\"filePath\":\"C:\\\\Users\\\\allen\\\\AuditSys_FS\\\\workplace\\\\20180517测试项目1\\\\工程签证\",\"fileSize\":0,\"fileType\":\"文件夹\",\"id\":\"830aca325ea54dd3882f902ae7640295\",\"isFolder\":1,\"pid\":\"a02e5a4e84c64a86944fe34d36a6ffcc\",\"subDate\":\"2018/05/17 13:46:29\",\"submitterID\":170920153644,\"submitterName\":\"kingroot\"}]}";
         return jsonObject.toJSONString();
-//        return "{\"total\":4,\"rows\":[{\"belongToProjectID\":\"XM20180517134628\",\"editable\":0,\"fileDesc\":\"测试项目1\",\"fileName\":\"20180517测试项目1\",\"filePath\":\"C:\\\\Users\\\\allen\\\\AuditSys_FS\\\\workplace\\\\20180517测试项目1\",\"fileSize\":0,\"fileType\":\"文件夹\",\"id\":1,\"isFolder\":1,\"pid\":0,\"subDate\":\"2018/05/17 13:46:28\",\"submitterID\":170920153644,\"submitterName\":\"kingroot\"},{\"belongToProjectID\":\"XM20180517134628\",\"editable\":0,\"fileDesc\":\"用于存放本工程全部工程节点材料\",\"fileName\":\"工程节点\",\"filePath\":\"C:\\\\Users\\\\allen\\\\AuditSys_FS\\\\workplace\\\\20180517测试项目1\\\\工程节点\",\"fileSize\":0,\"fileType\":\"文件夹\",\"id\":2,\"isFolder\":1,\"pid\":1,\"subDate\":\"2018/05/17 13:46:29\",\"submitterID\":170920153644,\"submitterName\":\"kingroot\"},{\"belongToProjectID\":\"XM20180517134628\",\"editable\":0,\"fileDesc\":\"测试项目1\",\"fileName\":\"测试项目1-施工主要材料明细表.xls\",\"filePath\":\"C:\\\\Users\\\\allen\\\\AuditSys_FS\\\\workplace\\\\20180517测试项目1\\\\测试项目1-施工主要材料明细表.xls\",\"fileSize\":25600,\"fileType\":\"xls\",\"id\":3,\"isFolder\":0,\"pid\":1,\"subDate\":\"2018/05/17 13:46:29\",\"submitterID\":170920153644,\"submitterName\":\"kingroot\"},{\"belongToProjectID\":\"XM20180517134628\",\"editable\":0,\"fileDesc\":\"用于存放本工程全部工程签证\",\"fileName\":\"工程签证\",\"filePath\":\"C:\\\\Users\\\\allen\\\\AuditSys_FS\\\\workplace\\\\20180517测试项目1\\\\工程签证\",\"fileSize\":0,\"fileType\":\"文件夹\",\"id\":4,\"isFolder\":1,\"pid\":1,\"subDate\":\"2018/05/17 13:46:29\",\"submitterID\":170920153644,\"submitterName\":\"kingroot\"}]}";
     }
 
-    @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_PROJ_CONTROCTOR)
-    @RequestMapping(path = "search", method = RequestMethod.POST)
-    public @ResponseBody String search(@RequestParam(name="keyword", required = true) String keyword, HttpServletRequest request, Model model) {
-
-        if(InjectionFilter.filter(keyword)) return JSON.toJSONString(new ReturnMessage("输入不合法"));
-
-        List<FileInfo> fileInfoList = fileService.search(keyword);
-
-        return JSON.toJSONString(fileInfoList, SerializerFeature.DisableCircularReferenceDetect);
-    }
+//    @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_PROJ_CONTROCTOR)
+//    @RequestMapping(path = "search", method = RequestMethod.POST)
+//    public @ResponseBody String search(@RequestParam(name="keyword", required = true) String keyword, HttpServletRequest request, Model model) {
+//
+//        if(InjectionFilter.filter(keyword)) return JSON.toJSONString(new ReturnMessage("输入不合法"));
+//
+//        List<FileInfo> fileInfoList = fileService.search(keyword);
+//
+//        return JSON.toJSONString(fileInfoList, SerializerFeature.DisableCircularReferenceDetect);
+//    }
 
     @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_PROJ_CONTROCTOR)
     @RequestMapping(path = "add", method = RequestMethod.POST)
@@ -157,6 +151,22 @@ public class FileMGMTController extends BaseController {
 
         return fileService.delete(fileID) == true ? JSON.toJSONString(new ReturnMessage("删除文件夹成功")) :
                 JSON.toJSONString(new ReturnMessage("删除文件夹失败"));
+
+    }
+
+    @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_DEPT_STUFF)
+    @RequestMapping(path = "deleteSelections", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    public @ResponseBody String deleteSelections(@RequestParam(value = "uuids", required = true) String uuids) {
+
+        List<Object[]> values = new ArrayList<Object[]>();
+        Arrays.stream(uuids.split(",")).forEach(UUID -> {
+            values.add(new Object[]{UUID});
+        });
+
+        if(fileService.batchDelete("ID = ?", values) && queryHelper.batchDelete(FileToUser.class, "FILE_ID = ?", values))
+            return JSON.toJSONString(new ReturnMessage("删除成功"));
+
+        return JSON.toJSONString(new ReturnMessage("删除失败"));
 
     }
 

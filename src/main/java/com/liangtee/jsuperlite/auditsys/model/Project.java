@@ -1,8 +1,6 @@
 package com.liangtee.jsuperlite.auditsys.model;
 
 import com.liangtee.jsuperlite.auditsys.utils.TimeFormater;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,36 +15,36 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "T_PROJECT_INFO")
-@Document(indexName = "jsuperliteauditsys",type = "projectinfo")
+//@Document(indexName = "jsuperliteauditsys",type = "projectinfo")
 public class Project {
 
     @Id
-    @org.springframework.data.annotation.Id
+//    @org.springframework.data.annotation.Id
     @Column(name = "ID")
     private String ID;      //ID template: XM20170721164011
 
     @Column(name = "PROJECT_NAME", nullable = false)
-    @Field
+//    @Field
     private String projectName;
 
     @Column(name = "PROJECT_LOC", nullable = false)
-    @Field
+//    @Field
     private String projectLoc;
 
     @Column(name = "EXPECTED_START_DATE", nullable = false)
-    @Field
+//    @Field
     private String expectedStartDate;
 
     @Column(name = "EXPECTED_END_DATE", nullable = false)
-    @Field
+//    @Field
     private String expectedEndDate;
 
     @Column(name = "START_TIME", nullable = false)
-    @Field
+//    @Field
     private String startDate;
 
     @Column(name = "END_TIME", nullable = false)
-    @Field
+//    @Field
     private String endDate;
 
     @Column(name = "DURATION", nullable = false)

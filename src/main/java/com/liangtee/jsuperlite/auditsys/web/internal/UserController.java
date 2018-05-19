@@ -1,13 +1,16 @@
 package com.liangtee.jsuperlite.auditsys.web.internal;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.liangtee.jsuperlite.auditsys.Annotation.AccessControl;
 import com.liangtee.jsuperlite.auditsys.model.Organization;
+import com.liangtee.jsuperlite.auditsys.model.ProjectNode;
 import com.liangtee.jsuperlite.auditsys.model.User;
 import com.liangtee.jsuperlite.auditsys.service.OrganizationService;
 import com.liangtee.jsuperlite.auditsys.service.UserService;
+import com.liangtee.jsuperlite.auditsys.service.base.PageModel;
 import com.liangtee.jsuperlite.auditsys.utils.InjectionFilter;
 import com.liangtee.jsuperlite.auditsys.utils.MD5Encoder;
 import com.liangtee.jsuperlite.auditsys.values.UserConfs;
@@ -49,6 +52,35 @@ public class UserController {
         model.addAttribute("userMap", userMap);
 
         return "content_pages/sys-users";
+    }
+
+    @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_DEPT_STUFF)
+    @RequestMapping(path = "load", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    public @ResponseBody String load(@RequestParam(name="limit", required = true) int limit,
+                                     @RequestParam(name="offset", required = true) int offset,
+                                     @RequestParam(name="keyword", required = false) String keyword,
+                                     HttpServletRequest request, Model model) {
+
+        PageModel pageModel = new PageModel(limit, (limit + offset)/limit);
+
+        List<Object> userTreeList = null;
+        if(keyword != null && !keyword.isEmpty()) {
+            keyword = "%" + keyword.trim() + "%";
+            userTreeList = userService.getUserTree(pageModel, organizationService.getAll(), "USER_NAME = ? OR EMAIL = ? OR PHONE_NUMBER = ?",
+                    keyword, keyword, keyword);
+        } else {
+            userTreeList = userService.getUserTree(pageModel, organizationService.getAll(), "1 = ?", 1);
+        }
+
+        int totalSize = userTreeList.size();
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("rows", userTreeList);
+        jsonObject.put("total", totalSize);
+
+        System.out.println(jsonObject.toJSONString());
+
+        return jsonObject.toJSONString();
     }
 
     @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_ADMIN)

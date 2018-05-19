@@ -551,12 +551,9 @@
         }
     };
     $.fn.treegrid = function(method) {
-        console.log("aaaaaaa");
         if (methods[method]) {
-            console.log("bbb");
             return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
         } else if (typeof method === 'object' || !method) {
-            console.log("ccc");
             return methods.initTree.apply(this, arguments);
         } else {
             $.error('Method with name ' + method + ' does not exists for jQuery.treegrid');

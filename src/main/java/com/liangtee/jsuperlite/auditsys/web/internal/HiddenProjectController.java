@@ -84,6 +84,7 @@ public class HiddenProjectController extends BaseController {
                                      @RequestParam(name="sort", required = false) String sort,
                                      @RequestParam(name="order", required = false) String order,
                                      @RequestParam(name="keyword", required = false) String keyword,
+                                     @RequestParam(name="projectID", required = true) String projectID,
                                      HttpServletRequest request, Model model) {
 
         User user = (User) request.getSession().getAttribute("user");
@@ -93,12 +94,12 @@ public class HiddenProjectController extends BaseController {
         if(keyword != null && !keyword.isEmpty()) {
             keyword = "%" + keyword.trim() + "%";
             hiddenProjectList = hiddenProjectService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC,
-                    "construction_position like ? or start_date like ?", keyword, keyword);
+                    "project_id = ? and (construction_position like ? or start_date like ?)", projectID, keyword, keyword);
         } else {
-            hiddenProjectList = hiddenProjectService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC, "1 = ?", 1);
+            hiddenProjectList = hiddenProjectService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC, "project_id = ?", projectID);
         }
 
-        int totalSize = hiddenProjectService.count("1 = ?", 1);
+        int totalSize = hiddenProjectService.count("project_id = ?", projectID);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("rows", hiddenProjectList);

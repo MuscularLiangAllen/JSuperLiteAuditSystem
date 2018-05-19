@@ -1,9 +1,6 @@
 package com.liangtee.jsuperlite.auditsys.repository;
 
 import com.liangtee.jsuperlite.auditsys.model.FileInfo;
-import com.liangtee.jsuperlite.auditsys.repository.base.BaseRepository;
-import org.springframework.data.elasticsearch.repository.ElasticsearchCrudRepository;
-import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;

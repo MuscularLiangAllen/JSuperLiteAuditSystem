@@ -77,6 +77,7 @@ public class ProjectNodeController extends BaseController {
                                      @RequestParam(name="sort", required = false) String sort,
                                      @RequestParam(name="order", required = false) String order,
                                      @RequestParam(name="keyword", required = false) String keyword,
+                                     @RequestParam(name="projectID", required = true) String projectID,
                                      HttpServletRequest request, Model model) {
 
         User user = (User) request.getSession().getAttribute("user");
@@ -86,12 +87,12 @@ public class ProjectNodeController extends BaseController {
         if(keyword != null && !keyword.isEmpty()) {
             keyword = "%" + keyword.trim() + "%";
             projectNodeList = projectNodeService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC,
-                    "NAME like ? OR NODE_DESC like ?", keyword, keyword);
+                    "PROJECT_ID = ? AND (NAME like ? OR NODE_DESC like ?)", projectID, keyword, keyword);
         } else {
-            projectNodeList = projectNodeService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC, "1 = ?", 1);
+            projectNodeList = projectNodeService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC, "PROJECT_ID = ?", projectID);
         }
 
-        int totalSize = projectNodeService.count("1 = ?", 1);
+        int totalSize = projectNodeService.count("PROJECT_ID = ?", projectID);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("rows", projectNodeList);

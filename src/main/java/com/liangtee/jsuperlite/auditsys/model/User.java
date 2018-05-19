@@ -17,7 +17,7 @@ import com.liangtee.jsuperlite.auditsys.values.UserConfs;
 @Table(name = "T_USER")
 public class User {
 
-//	@JSONField(name="id")
+	@JSONField(name="id")
 	@Id
 //	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "UID")
@@ -47,7 +47,7 @@ public class User {
 	@Column(name = "USER_TYPE_NAME", unique = false)
 	private String userTypeName;
 
-//	@JSONField(name="pid")
+	@JSONField(name="pid")
 	@Column(name = "DEPT_ID",  unique = false)
 	private int deptID;
 
@@ -89,7 +89,7 @@ public class User {
 	@Transient
 	public static final int USER_TYPE_PROJ_CONTROCTOR = 4;
 
-	protected User() {
+	public User() {
 		// TODO Auto-generated constructor stub
 	}
 	

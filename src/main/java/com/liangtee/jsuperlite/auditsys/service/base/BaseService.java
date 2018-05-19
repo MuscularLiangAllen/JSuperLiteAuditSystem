@@ -31,7 +31,7 @@ public class BaseService<T, ID extends Serializable> {
 
     private static final String SELECT_SQL_LIMIT_ORDER = "SELECT * FROM %s WHERE %s ORDER BY %s %s LIMIT %d, %d";
 
-    public static final int AESC = 1;
+    public static final int ASC = 1;
 
     public static final int DESC = -1;
 
