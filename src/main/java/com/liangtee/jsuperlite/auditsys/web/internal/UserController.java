@@ -143,6 +143,7 @@ public class UserController {
 
         User user = userService.get(userID);
 
+        System.out.println(JSON.toJSONString(user));
         return JSON.toJSONString(user);
 
     }

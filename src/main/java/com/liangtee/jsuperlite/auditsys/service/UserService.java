@@ -86,7 +86,7 @@ public class UserService extends BaseService<User, Long> {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("name", org.getOrgName());
                     jsonObject.put("userTypeName", "");
-                    jsonObject.put("EMail", "");
+                    jsonObject.put("eMail", "");
                     jsonObject.put("phoneNumber", "");
                     jsonObject.put("createTime", "");
                     jsonObject.put("isActive", "");
