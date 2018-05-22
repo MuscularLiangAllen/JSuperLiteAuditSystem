@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="/modules/header::css_library"></head>
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+
+    <section class="content-header">
+      <h1 style="font-family: 'Microsoft YaHei';">
+        组织机构管理
+        <small>Organization Management</small>
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
+        <li class="active">组织机构管理</li>
+      </ol>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <input id="path" type="hidden" th:value="@{/auditsys}"></input>
+      <!-- Small boxes (Stat box) -->
+      <!-- /.row -->
+      <!-- Main row -->
+      <div class="row">
+        <!-- Left col -->
+        <section class="col-lg-12 col-xs-12 col-sm-12 col-md-12 connectedSortable">
+
+          <div class="box box-primary">
+            <div class="box-header">
+              <i class="ion ion-clipboard"></i>
+
+              <h3 class="box-title" style="font-family: 'Microsoft YaHei'; ">组织机构列表</h3>
+
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body table-responsive">
+              <table id="example-basic-expandable" class="table table-hover ">
+                <tbody>
+                  <thead>
+                    <tr style="background-color: #EEE;">
+                      <th>名称</th>
+                      <th>类型</th>
+                      <th>地址</th>
+                      <th>电话</th>
+                      <th>创建日期</th>
+                      <th>描述</th>
+                      <th>操作</th>
+                    </tr>
+                   </thead>
+                   <th:block th:each="org, status : ${orgList}">
+                     <tr th:attr="data-tt-id=${org.ID}, data-tt-parent-id=${org.belongTo}">
+                     <td th:text="${org.orgName}">山东大学</td>
+                     <td th:text="${org.orgType}">学校</td>
+                     <td th:text="${org.location}">世纪大道10600号</td>
+                     <td th:text="${org.tel}">88888888</td>
+                     <td th:text="${org.createTime}">2017/5/11</td>
+                     <td th:text="${org.orgDesc}"></td>
+                     <td><a href="javascript:void(0);" th:onclick="${'addOrgModal('+org.ID+')'}">添加</a> / <a href="javascript:void(0);" th:onclick="${'loadOrgInfo('+org.ID+')'}">修改</a> / <a href="javascript:void(0);" th:onclick="${'deleteOrg('+org.ID+')'}">删除</a></td>
+                     </tr>
+                   </th:block>
+                </tbody>
+
+              </table>
+              <hr style="border-color: #CCCCCC;"/>
+              <button type="submit" class="btn btn-success pull-left" onclick="addOrgModal(0)">添加顶级机构</button>
+              <div class="box-tools pull-right" style="margin-right: 10px;">
+                <ul class="pagination pagination-sm inline">
+                  <li><a href="#">&laquo;</a></li>
+                  <li><a href="#">1</a></li>
+                  <li><a href="#">2</a></li>
+                  <li><a href="#">3</a></li>
+                  <li><a href="#">&raquo;</a></li>
+                </ul>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </section>
+        <!-- /.Left col -->
+        <!-- right col (We are only adding the ID to make the widgets sortable)-->
+        <!-- right col -->
+      </div>
+      <!-- /.row (main row) -->
+    </section>
+    <!-- /.content -->
+
+  <!-- Modal -->
+  <div class="modal fade" id="addOrgModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div id="orgInfo" class="modal-content">
+        <div class="modal-header">
+          <template v-if="orgID == ''">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">新增机构</h4>
+          </template>
+          <template v-else="v-else">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">修改机构</h4>
+          </template>
+
+        </div>
+        <div class="modal-body" style="text-align: left;">
+          <div class="row" style="margin-left:auto; margin-right:auto; width: 80%; ">
+            <div class="col-sm-12 col-md-12" style="float:left;">
+              <form id="vform">
+                <input type="hidden" id="parentOrgID"></input>
+                <div class="form-group" style="margin-top: -6px;">
+                  <label style="color: red;">*</label><label>机构名称:</label>
+                  <input v-model="orgName" name="orgName" type="text" style="width: 70%"></input><br></br>
+                </div>
+                <div class="form-group" style="margin-top: -10px;">
+                  <label style="color: red;">*</label><label>机构类型:</label>
+                  <select v-model="orgTypeID" v-bind:value="orgTypeID" name="orgTypeID" required="required">
+                    <option value="1">学校</option>
+                    <option value="2">处室/院系</option>
+                    <option value="3">第三方审计单位</option>
+                    <option value="3">施工单位</option>
+                    <!--<option th:each="role : ${roleList}" th:value="${role.roleCode}" th:text="${role.roleDesc}">我我我</option>-->
+                  </select>
+                </div>
+                <div class="form-group" style="margin-top: -10px;">
+                  <label style="color: red;">*</label><label>电&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;话:</label>
+                  <input v-model="orgTel" name="orgTel" type="text" style="width: 70%"></input><br></br>
+                </div>
+                <div class="form-group" style="margin-top: -10px;">
+                  <label style="color: red;">*</label><label>地&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;址:</label>
+                  <input v-model="orgLoc" name="orgLoc" type="text" style="width: 70%"></input><br></br>
+                </div>
+                <div class="form-group" style="margin-top: -10px; margin-left: 7px;">
+                  <label>描&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;述:</label>
+                  <input v-model="orgDesc" name="orgDesc" type="text" style="width: 71%"></input><br></br>
+                </div>
+              </form>
+              <span style="color: red;">*项为必填项目</span>
+
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <template v-if="orgID == ''">
+            <button type="button" class="btn btn-primary" v-on:click="add">保&nbsp;&nbsp;存</button>
+          </template>
+          <template v-else="v-else">
+            <button type="button" class="btn btn-primary" v-on:click="update">修&nbsp;&nbsp;改</button>
+          </template>
+
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div th:replace="/modules/bottom::js_library"></div>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+
+  function addOrgModal(parentOrgID) {
+      $("#addOrgModal").modal("show");
+      $("#parentOrgID").val(parentOrgID);
+  }
+
+  jQuery.validator.setDefaults({
+      debug: true,
+      success: "valid"
+  });
+
+  jQuery.validator.addMethod("isPhone", function(value, element) {
+      var tel = /^\d{3,4}-?\d{7,9}$/;
+      return this.optional(element) || tel.test(value);
+
+  }, "请正确填写您的联系电话(手机)");
+
+  var orgInfo = new Vue({
+        el: '#orgInfo',
+        data: {
+            orgID: '',
+            orgName: '',
+            orgTypeID: '',
+            orgTel: '',
+            orgLoc: '',
+            orgDesc: ''
+        },
+        methods: {
+            validate: function () {
+                var errorSymbol = "<span style='color: red; font-size: 18px;'>&nbsp;x</span>";
+                var vform = $("#vform");
+                vform.validate({
+                    rules: {
+                        orgName: {
+                            required: true,
+                            minlength: 3
+                        },
+                        orgTel: {
+                            required: true,
+                            isPhone: true
+                        },
+                        orgLoc: {
+                            required: true,
+                            minlength: 6
+                        },
+                        orgTypeID: {
+                            required: true
+                        }
+                    },
+                    messages: {
+                        orgName: {
+                            required: errorSymbol,
+                            minlength: "<span style='color: red; font-size: 14px;'>&nbsp;组织机构名称长度不能少于3个字符</span>"
+                        },
+                        orgTel: {
+                            required: errorSymbol,
+                            isPhone: "<span style='color: red; font-size: 14px;'>&nbsp;固话格式: 区号-座机号</span>"
+                        },
+                        orgLoc: {
+                            required: errorSymbol,
+                            minlength: "<span style='color: red; font-size: 14px;'>&nbsp;组织机构地址长度不能少于6个字符</span>"
+                        },
+                        orgTypeID: {
+                            required: "<span style='color: red; font-size: 14px;'>&nbsp;请选择组织机构类型</span>"
+                        }
+                    }
+                });
+                return vform;
+            },
+            add: function () {
+                var url = $("#path").val() + '/org/add';
+                var parentOrgID = $("#parentOrgID").val();
+
+                if(this.validate().valid() == false) {
+                    alert('数据项录入有误, 请按照提示修改');
+                    return;
+                }
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: {parentOrgID: parentOrgID, orgname: this.orgName, orgtypeID: this.orgTypeID, orgtel: this.orgTel,
+                        orgloc: this.orgLoc, orgdesc: this.orgDesc},
+                    success: function(result) {
+                        var res = eval(result);
+                        alert(res["message"]);
+                        location.reload();
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(errorThrown);
+                    }
+                });
+            },
+            update: function () {
+                if(this.validate().valid() == false) {
+                    alert('数据项录入有误, 请按照提示修改');
+                    return;
+                }
+                var url = $("#path").val() + '/org/update';
+
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: {orgID: this.orgID, orgname: this.orgName, orgtypeID: this.orgTypeID, orgtel: this.orgTel,
+                        orgloc: this.orgLoc, orgdesc: this.orgDesc},
+                    success: function(result) {
+                        var res = eval(result);
+                        alert(res["message"]);
+                        location.reload();
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(errorThrown);
+                    }
+                });
+            }
+        }
+    });
+
+    function loadOrgInfo(orgID) {
+        var url = $('#path').val() + '/org/get'
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: {orgID: orgID},
+            success: function(result) {
+                var org = eval(result);
+                orgInfo.orgID = org.id;
+                orgInfo.orgName = org.name;
+                orgInfo.orgTypeID = org.orgTypeCode;
+                orgInfo.orgTel = org.tel;
+                orgInfo.orgLoc = org.location;
+                orgInfo.orgDesc = org.orgDesc;
+                addOrgModal(org.pid);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(errorThrown);
+            }
+        });
+    }
+
+    function deleteOrg(orgID) {
+        var path = $("#path").val();
+        if(window.confirm("确定删除该组织机构及其附属所有机构?")){
+            $.ajax({
+                type: "POST",
+                url: path + "/org/delete",
+                data: {orgID: orgID},
+                success: function(result) {
+                    var res = eval(result)
+                    alert(res["message"]);
+                    location.reload();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            });
+        }
+        return;
+    }
+
+  $('#addOrgModal').on('hidden.bs.modal', function () {
+      clearForm($('#vform'));
+      $('#vform').validate().resetForm();
+  });
+
+  function clearForm(form) {
+      // input清空
+      $(':input', form).each(function () {
+          var type = this.type;
+          var tag = this.tagName.toLowerCase(); // normalize case
+          if (type == 'text' || type == 'password' || tag == 'textarea')
+              this.value = "";
+          // 多选checkboxes清空
+          // select 下拉框清空
+          else if (tag == 'select')
+              this.selectedIndex = -1;
+      });
+  };
+
+  $("#example-basic-expandable").treetable({
+      expandable: true,
+      initialState: 'expanded'
+  });
+
+  // Highlight selected row
+  $("#example-basic-expandable tbody").on("mousedown", "tr", function() {
+      $(".selected").not(this).removeClass("selected");
+      $(this).toggleClass("selected");
+  });
+
+  /*]]>*/
+</script>
+
+</body>
+</html>

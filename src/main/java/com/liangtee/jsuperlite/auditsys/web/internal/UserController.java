@@ -66,7 +66,7 @@ public class UserController {
         List<Object> userTreeList = null;
         if(keyword != null && !keyword.isEmpty()) {
             keyword = "%" + keyword.trim() + "%";
-            userTreeList = userService.getUserTree(pageModel, organizationService.getAll(), "USER_NAME = ? OR EMAIL = ? OR PHONE_NUMBER = ?",
+            userTreeList = userService.getUserTree(pageModel, organizationService.getAll(), "USER_NAME LIKE ? OR EMAIL LIKE ? OR PHONE_NUMBER LIKE ?",
                     keyword, keyword, keyword);
         } else {
             userTreeList = userService.getUserTree(pageModel, organizationService.getAll(), "1 = ?", 1);
@@ -77,8 +77,6 @@ public class UserController {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("rows", userTreeList);
         jsonObject.put("total", totalSize);
-
-        System.out.println(jsonObject.toJSONString());
 
         return jsonObject.toJSONString();
     }

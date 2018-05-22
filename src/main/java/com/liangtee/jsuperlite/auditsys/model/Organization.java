@@ -37,7 +37,7 @@ public class Organization {
     @Column(name = "ORG_TYPE_CODE", nullable = false)
     private int orgTypeCode;
 
-    @JSONField(serialize=false)
+//    @JSONField(serialize=false)
     @Column(name = "ORG_TYPE", nullable = false)
     private String orgType;
 
@@ -50,7 +50,7 @@ public class Organization {
     @Column(name = "ORG_TEL")
     private String tel;
 
-    @JSONField(serialize=false)
+//    @JSONField(serialize=false)
     @Column(name = "ORG_CREATE_TIME")
     private String createTime;
 

@@ -7,7 +7,7 @@ package com.liangtee.jsuperlite.auditsys.values;
  */
 public class OrgConfs {
 
-    public static final int NO_PARENT_ORG = -1;
+    public static final int NO_PARENT_ORG = 0;
 
     public class TypeCode {
 

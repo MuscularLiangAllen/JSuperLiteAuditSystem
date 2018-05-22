@@ -1,12 +1,14 @@
 package com.liangtee.jsuperlite.auditsys.web.internal;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.liangtee.jsuperlite.auditsys.Annotation.AccessControl;
 import com.liangtee.jsuperlite.auditsys.model.Organization;
 import com.liangtee.jsuperlite.auditsys.model.User;
 import com.liangtee.jsuperlite.auditsys.service.OrganizationService;
+import com.liangtee.jsuperlite.auditsys.service.base.PageModel;
 import com.liangtee.jsuperlite.auditsys.utils.InjectionFilter;
 import com.liangtee.jsuperlite.auditsys.values.OrgConfs;
 import com.liangtee.jsuperlite.auditsys.values.UserConfs;
@@ -45,24 +47,35 @@ public class OrganizationController {
         List<Organization> orgList = organizationService.getAll();
         model.addAttribute("orgList", orgList);
 
-//        model.addAttribute("pageName", "sys-org");
-
-//        return "internal/sys-org";
         return "content_pages/sys-org";
     }
 
-//    @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_VIEWER)
-//    @RequestMapping(path = "content", method = RequestMethod.GET)
-//    public String show2(HttpServletRequest request, Model model) {
-//
-//        List<Organization> orgList = organizationService.getAll();
-//        model.addAttribute("orgList", orgList);
-//
-//        model.addAttribute("pageName", "sys-org");
-//
-//        return "content_pages/sys-org";
-////        return "modules/framework";
-//    }
+    @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_DEPT_STUFF)
+    @RequestMapping(path = "load", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    public @ResponseBody String load(@RequestParam(name="limit", required = true) int limit,
+                                     @RequestParam(name="offset", required = true) int offset,
+                                     @RequestParam(name="keyword", required = false) String keyword,
+                                     HttpServletRequest request, Model model) {
+
+        PageModel pageModel = new PageModel(limit, (limit + offset)/limit);
+
+        List<Organization> orgTreeList = null;
+        if(keyword != null && !keyword.isEmpty()) {
+            keyword = "%" + keyword.trim() + "%";
+            orgTreeList = organizationService.getAll(pageModel, keyword);
+        } else {
+            orgTreeList = organizationService.getAll(pageModel);
+        }
+
+        int totalSize = orgTreeList.size();
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("rows", orgTreeList);
+        jsonObject.put("total", totalSize);
+
+        return jsonObject.toJSONString();
+    }
+
 
     @RequestMapping(path = "list", method = RequestMethod.GET)
     public @ResponseBody String list(HttpServletRequest request, Model model) {

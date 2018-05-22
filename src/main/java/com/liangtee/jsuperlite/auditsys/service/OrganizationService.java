@@ -3,6 +3,7 @@ package com.liangtee.jsuperlite.auditsys.service;
 import com.liangtee.jsuperlite.auditsys.model.Organization;
 import com.liangtee.jsuperlite.auditsys.repository.OrgRepository;
 import com.liangtee.jsuperlite.auditsys.service.base.BaseService;
+import com.liangtee.jsuperlite.auditsys.service.base.PageModel;
 import com.liangtee.jsuperlite.auditsys.values.OrgConfs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -49,6 +50,70 @@ public class OrganizationService extends BaseService<Organization, Integer> {
         Queue<Organization> queue = new LinkedList<Organization>();
         queue.addAll(rootNodes);
 
+        Set<Organization> IDs = new HashSet<Organization>();
+
+        while (!queue.isEmpty()) {
+            Organization org = queue.poll();
+            if(!IDs.contains(org)) {
+                result.add(org);
+                IDs.add(org);
+            }
+            List<Organization> childNodes = findAll("BELONG_TO_ID = ? AND IS_HIDDEN = ?", org.getID(), 0);
+            queue.addAll(childNodes);
+            int parentIndex = result.indexOf(org);
+            result.addAll(parentIndex+1, childNodes);
+            IDs.addAll(childNodes);
+        }
+
+        return result;
+    }
+
+    @CacheEvict(value="hierarchicalLevel_org", allEntries = true)
+    public List<Organization> getAll(PageModel pageModel) {
+
+        List<Organization> result = new LinkedList<Organization>();
+
+        List<Organization> rootNodes = findByPage(pageModel,"ID", ASC,"BELONG_TO_ID = ? AND IS_HIDDEN = ?", OrgConfs.NO_PARENT_ORG, 0);
+
+        Queue<Organization> queue = new LinkedList<>();
+        queue.addAll(rootNodes);
+
+        Set<Organization> IDs = new HashSet<Organization>();
+
+        while (!queue.isEmpty()) {
+            Organization org = queue.poll();
+            if(!IDs.contains(org)) {
+                result.add(org);
+                IDs.add(org);
+            }
+            List<Organization> childNodes = findAll("BELONG_TO_ID = ? AND IS_HIDDEN = ?", org.getID(), 0);
+            queue.addAll(childNodes);
+            int parentIndex = result.indexOf(org);
+            result.addAll(parentIndex+1, childNodes);
+            IDs.addAll(childNodes);
+        }
+
+        return result;
+    }
+
+    @CacheEvict(value="hierarchicalLevel_org", allEntries = true)
+    public List<Organization> getAll(PageModel pageModel, String keywordAboutName) {
+
+        List<Organization> result = new LinkedList<Organization>();
+
+//        List<Organization> rootNodes = findAll("IS_HIDDEN = ? AND AND ORG_NAME LIKE ?", 0, keywordAboutName);
+        List<Organization> rootNodes = findByPage(pageModel,"ID", ASC,"IS_HIDDEN = ? AND ORG_NAME LIKE ?", 0, keywordAboutName);
+        if(rootNodes == null || rootNodes.size() == 0) return result;
+
+        Queue<Organization> queue = new LinkedList<>();
+        queue.addAll(rootNodes);
+
+
+//        List<Organization> rootNodes = findAll("BELONG_TO_ID = ? AND IS_HIDDEN = ? AND ORG_NAME LIKE ?",
+//                OrgConfs.NO_PARENT_ORG, 0, "%"+keywordAboutName+"%");
+//        Queue<Organization> queue = new LinkedList<Organization>();
+//        queue.addAll(rootNodes);
+//
         Set<Organization> IDs = new HashSet<Organization>();
 
         while (!queue.isEmpty()) {

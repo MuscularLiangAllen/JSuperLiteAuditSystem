@@ -397,7 +397,8 @@
                   success: function(result) {
                       var res =  eval("("+result+")");
                       alert(res["message"]);
-                      window.location.reload();
+                      $('#dataTable').bootstrapTable('refresh');
+                      $("#addFileModal").modal("hide");
                   },
                   error: function (XMLHttpRequest, textStatus, errorThrown) {
                       alert(errorThrown);
@@ -424,7 +425,8 @@
                   success: function(result) {
                       var res =  eval("("+result+")");
                       alert(res["message"]);
-                      window.location.reload();
+                      $('#dataTable').bootstrapTable('refresh');
+                      $("#addFileModal").modal("hide");
                   },
                   error: function (XMLHttpRequest, textStatus, errorThrown) {
                       alert(errorThrown);

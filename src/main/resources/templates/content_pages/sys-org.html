@@ -3,164 +3,267 @@
 
 <head th:replace="/modules/header::css_library"></head>
 
+<div th:replace="/modules/bottom::js_library"></div>
+
+<link rel="stylesheet" th:href="@{/plugins/bootstrap-table/bootstrap-table.min.css}"/>
+<link rel="stylesheet" th:href="@{/plugins/jquery-treegrid/css/jquery.treegrid.css}" />
+
+<link rel="stylesheet" th:href="@{/plugins/bootstrap-switch/bootstrap-switch.min.css}"/>
+
+<script th:src="@{/plugins/fineuploader/fine-uploader.core.min.js}"></script>
+<script th:src="@{/plugins/fineuploader/fine-uploader.min.js}"></script>
+
+<script th:src="@{/plugins/jquery-treegrid/js/jquery.treegrid.js}"></script>
+
 <body class="hold-transition skin-blue sidebar-mini">
 
-<!--<div th:replace="/modules/bottom::jsloader"></div>-->
-
     <!-- Content Header (Page header) -->
-    <section class="content-header">
-      <h1 style="font-family: 'Microsoft YaHei';">
-        组织机构管理
-        <small>Organization Management</small>
-      </h1>
-      <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
-        <li class="active">组织机构管理</li>
-      </ol>
+    <section class="content-header" style="border: 0px solid red; height: 50px; padding-top: 0px;">
+      <div class="row" style="padding-top: 10px; padding-bottom: 0px;">
+        <div class="col-lg-10 col-md-10">
+          <div class="col-lg-9 col-md-9">
+            <h3 style="font-family: 'Microsoft YaHei'; margin-top: 5px;">
+              组织机构管理
+              <small>Organization Management</small>
+            </h3>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-2">
+          <ol class="breadcrumb" style="background-color: #FFF; border: 0px solid green;">
+            <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
+            <li class="active">文件管理</li>
+          </ol>
+        </div>
+      </div>
     </section>
 
     <!-- Main content -->
     <section class="content">
+      <input id="rootpath" type="hidden" th:value="@{/}"></input>
       <input id="path" type="hidden" th:value="@{/auditsys}"></input>
-      <!-- Small boxes (Stat box) -->
-      <!-- /.row -->
+      <input id="totalCounts" type="hidden" th:value="${totalCounts}"></input>
       <!-- Main row -->
       <div class="row">
-        <!-- Left col -->
-        <section class="col-lg-12 col-xs-12 col-sm-12 col-md-12 connectedSortable">
-
+        <section class="col-md-12 col-lg-12">
           <div class="box box-primary">
             <div class="box-header">
-              <i class="ion ion-clipboard"></i>
-
-              <h3 class="box-title" style="font-family: 'Microsoft YaHei'; ">组织机构列表</h3>
-
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body table-responsive">
-              <table id="example-basic-expandable" class="table table-hover ">
-                <tbody>
-                  <thead>
-                    <tr style="background-color: #EEE;">
-                      <th>名称</th>
-                      <th>类型</th>
-                      <th>地址</th>
-                      <th>电话</th>
-                      <th>创建日期</th>
-                      <th>描述</th>
-                      <th>操作</th>
-                    </tr>
-                   </thead>
-                   <th:block th:each="org, status : ${orgList}">
-                     <tr th:attr="data-tt-id=${org.ID}, data-tt-parent-id=${org.belongTo}">
-                     <td th:text="${org.orgName}">山东大学</td>
-                     <td th:text="${org.orgType}">学校</td>
-                     <td th:text="${org.location}">世纪大道10600号</td>
-                     <td th:text="${org.tel}">88888888</td>
-                     <td th:text="${org.createTime}">2017/5/11</td>
-                     <td th:text="${org.orgDesc}"></td>
-                     <td><a href="javascript:void(0);" th:onclick="${'addOrgModal('+org.ID+')'}">添加</a> / <a href="javascript:void(0);" th:onclick="${'loadOrgInfo('+org.ID+')'}">修改</a> / <a href="javascript:void(0);" th:onclick="${'deleteOrg('+org.ID+')'}">删除</a></td>
-                     </tr>
-                   </th:block>
-                </tbody>
-
-              </table>
-              <hr style="border-color: #CCCCCC;"/>
-              <button type="submit" class="btn btn-success pull-left" onclick="addOrgModal(-1)">添加顶级机构</button>
-              <div class="box-tools pull-right" style="margin-right: 10px;">
-                <ul class="pagination pagination-sm inline">
-                  <li><a href="#">&laquo;</a></li>
-                  <li><a href="#">1</a></li>
-                  <li><a href="#">2</a></li>
-                  <li><a href="#">3</a></li>
-                  <li><a href="#">&raquo;</a></li>
-                </ul>
+              <div id="toolbar" class="btn-group">
+                <button id="btn_add" type="button" class="btn btn-success" onclick="javascript:addOrgModal(0);">
+                  <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span>添加顶级机构 (Add)
+                </button>
+                <button id="btn_delete" type="button" class="btn btn-danger" onclick="javascript:deleteItems();">
+                  <span class="glyphicon glyphicon-remove" aria-hidden="true" ></span>删除 (Delete)
+                </button>
               </div>
+              <table id="dataTable" class="data-table" style="white-space: nowrap;" width="100%"></table>
             </div>
-            <!-- /.box-body -->
           </div>
-          <!-- /.box -->
         </section>
-        <!-- /.Left col -->
-        <!-- right col (We are only adding the ID to make the widgets sortable)-->
-        <!-- right col -->
       </div>
-      <!-- /.row (main row) -->
+
     </section>
-    <!-- /.content -->
 
   <!-- Modal -->
-  <div class="modal fade" id="addOrgModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog" role="document">
-      <div id="orgInfo" class="modal-content">
-        <div class="modal-header">
-          <template v-if="orgID == ''">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">新增机构</h4>
-          </template>
-          <template v-else="v-else">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">修改机构</h4>
-          </template>
+    <div class="modal fade" id="addOrgModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div id="orgInfo" class="modal-content">
+          <div class="modal-header">
+            <template v-if="orgID == ''">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title">新增机构</h4>
+            </template>
+            <template v-else="v-else">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title">修改机构</h4>
+            </template>
 
-        </div>
-        <div class="modal-body" style="text-align: left;">
-          <div class="row" style="margin-left:auto; margin-right:auto; width: 80%; ">
-            <div class="col-sm-12 col-md-12" style="float:left;">
-              <form id="vform">
-                <input type="hidden" id="parentOrgID"></input>
-                <div class="form-group" style="margin-top: -6px;">
-                  <label style="color: red;">*</label><label>机构名称:</label>
-                  <input v-model="orgName" name="orgName" type="text" style="width: 70%"></input><br></br>
-                </div>
-                <div class="form-group" style="margin-top: -10px;">
-                  <label style="color: red;">*</label><label>机构类型:</label>
-                  <select v-model="orgTypeID" v-bind:value="orgTypeID" name="orgTypeID" required="required">
-                    <option value="1">学校</option>
-                    <option value="2">处室/院系</option>
-                    <option value="3">第三方审计单位</option>
-                    <option value="3">施工单位</option>
-                    <!--<option th:each="role : ${roleList}" th:value="${role.roleCode}" th:text="${role.roleDesc}">我我我</option>-->
-                  </select>
-                </div>
-                <div class="form-group" style="margin-top: -10px;">
-                  <label style="color: red;">*</label><label>电&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;话:</label>
-                  <input v-model="orgTel" name="orgTel" type="text" style="width: 70%"></input><br></br>
-                </div>
-                <div class="form-group" style="margin-top: -10px;">
-                  <label style="color: red;">*</label><label>地&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;址:</label>
-                  <input v-model="orgLoc" name="orgLoc" type="text" style="width: 70%"></input><br></br>
-                </div>
-                <div class="form-group" style="margin-top: -10px; margin-left: 7px;">
-                  <label>描&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;述:</label>
-                  <input v-model="orgDesc" name="orgDesc" type="text" style="width: 71%"></input><br></br>
-                </div>
-              </form>
-              <span style="color: red;">*项为必填项目</span>
-
-            </div>
           </div>
+          <div class="modal-body" style="text-align: left;">
+            <div class="row" style="margin-left:auto; margin-right:auto; width: 80%; ">
+              <div class="col-sm-12 col-md-12" style="float:left;">
+                <form id="vform">
+                  <input type="hidden" id="parentOrgID"></input>
+                  <div class="form-group" style="margin-top: -6px;">
+                    <label style="color: red;">*</label><label>机构名称:</label>
+                    <input v-model="orgName" name="orgName" type="text" style="width: 70%"></input><br></br>
+                  </div>
+                  <div class="form-group" style="margin-top: -10px;">
+                    <label style="color: red;">*</label><label>机构类型:</label>
+                    <select v-model="orgTypeID" v-bind:value="orgTypeID" name="orgTypeID" required="required">
+                      <option value="1">学校</option>
+                      <option value="2">处室/院系</option>
+                      <option value="3">第三方审计单位</option>
+                      <option value="3">施工单位</option>
+                      <!--<option th:each="role : ${roleList}" th:value="${role.roleCode}" th:text="${role.roleDesc}">我我我</option>-->
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin-top: -10px;">
+                    <label style="color: red;">*</label><label>电&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;话:</label>
+                    <input v-model="orgTel" name="orgTel" type="text" style="width: 70%"></input><br></br>
+                  </div>
+                  <div class="form-group" style="margin-top: -10px;">
+                    <label style="color: red;">*</label><label>地&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;址:</label>
+                    <input v-model="orgLoc" name="orgLoc" type="text" style="width: 70%"></input><br></br>
+                  </div>
+                  <div class="form-group" style="margin-top: -10px; margin-left: 7px;">
+                    <label>描&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;述:</label>
+                    <input v-model="orgDesc" name="orgDesc" type="text" style="width: 71%"></input><br></br>
+                  </div>
+                </form>
+                <span style="color: red;">*项为必填项目</span>
 
-        </div>
-        <div class="modal-footer">
-          <template v-if="orgID == ''">
-            <button type="button" class="btn btn-primary" v-on:click="add">保&nbsp;&nbsp;存</button>
-          </template>
-          <template v-else="v-else">
-            <button type="button" class="btn btn-primary" v-on:click="update">修&nbsp;&nbsp;改</button>
-          </template>
+              </div>
+            </div>
 
-          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          </div>
+          <div class="modal-footer">
+            <template v-if="orgID == ''">
+              <button type="button" class="btn btn-primary" v-on:click="add">保&nbsp;&nbsp;存</button>
+            </template>
+            <template v-else="v-else">
+              <button type="button" class="btn btn-primary" v-on:click="update">修&nbsp;&nbsp;改</button>
+            </template>
+
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+
+  <!-- ACL Modal -->
+  <div th:replace="/modules/ACL::zTreeList"></div>
+
+<script th:src="@{/plugins/JQueryZtree/jquery.ztree.core.min.js}"></script>
+<script th:src="@{/plugins/JQueryZtree/jquery.ztree.excheck.min.js}"></script>
+
+<script th:src="@{/plugins/bootstrap-table/bootstrap-table.min.js}"></script>
+<script th:src="@{/plugins/bootstrap-table/bootstrap-table-zh-CN.min.js}"></script>
+<script th:src="@{/plugins/bootstrap-table/treegrid/bootstrap-table-treegrid.js}"></script>
+
+<script th:src="@{/plugins/bootstrap-switch/bootstrap-switch.min.js}"></script>
 
 
-<div th:replace="/modules/bottom::js_library"></div>
+<script th:src="@{/js/vue/vue.min.js}"></script>
 
 <script th:inline="javascript">
   /*<![CDATA[*/
+
+  var $table = $('.data-table');
+
+  var TableInit = function () {
+      var oTableInit = new Object();
+      //初始化Table
+      oTableInit.Init = function () {
+          $('#dataTable').bootstrapTable({
+              url: $('#path').val()+'/org/load',         //请求后台的URL（*）
+              method: 'get',                      //请求方式（*）
+              toolbar: '#toolbar',                //工具按钮用哪个容器
+              striped: true,                      //是否显示行间隔色
+              cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+              pagination: true,                   //是否显示分页（*）
+              uniqueId: 'id',
+              sortable: true,                     //是否启用排序
+              queryParams: oTableInit.queryParams,//传递参数（*）
+              sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+              pageNumber: 1,                       //初始化加载第一页，默认第一页
+              pageSize: 10,                       //每页的记录行数（*）
+              pageList: [10, 20, 50, 100],        //可供选择的每页的行数（*）
+              search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+              contentType: "application/x-www-form-urlencoded",
+              strictSearch: true,
+              showColumns: true,                  //是否显示所有的列
+              showRefresh: true,                  //是否显示刷新按钮
+              minimumCountColumns: 2,             //最少允许的列数
+              clickToSelect: false,                //是否启用点击选中行
+//                height: 700,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+              uniqueId: "no",                     //每一行的唯一标识，一般为主键列
+//                showToggle: true,                    //是否显示详细视图和列表视图的切换按钮
+              cardView: false,                    //是否显示详细视图
+              columns: [
+                  {
+                      checkbox: true,
+                  }, {
+                      field: 'name',
+                      title: '名称'
+                  }, {
+                      field: 'orgType',
+                      title: '类型'
+                  }, {
+                      field: 'location',
+                      title: '地址'
+                  }, {
+                      field: 'tel',
+                      title: '电话'
+                  },  {
+                      field: 'createTime',
+                      title: '创建日期'
+                  }, {
+                      field: 'orgDesc',
+                      title: '描述'
+                  }, {
+                      title: '操作',
+                      formatter:function(value, row, index) {
+                          return '<a href="javascript:void(0);" onclick=\"' + 'addOrgModal('+row.id+')' + '\" class=\"btn btn-success btn-xs\">添加</a>&nbsp;|&nbsp;' +
+                              '<a href="javascript:void(0);" onclick=\"' + 'loadOrgInfo('+row.id+')' + '\" class=\"btn btn-warning btn-xs\">修改</a>';
+                      }
+                  }
+              ],
+              // bootstrap-table-treegrid.js 插件配置
+              treeShowField: 'name',
+              parentIdField: 'pid',
+              onLoadSuccess: function(data) {
+                  // jquery.treegrid.js
+                  $table.treegrid({
+                      treeColumn: 1,
+                      onChange: function() {
+                          $table.bootstrapTable('resetWidth');
+                      }
+                  });
+              }
+          });
+
+      };
+
+      //得到查询的参数
+      oTableInit.queryParams = function (params) {
+          var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+              limit: params.limit,   //页面大小
+              offset: params.offset,
+              keyword: params.search//搜索
+          };
+          return temp;
+      };
+      return oTableInit;
+  };
+
+  var dataTable = new TableInit().Init();
+
+  function deleteItems() {
+      var selectedRows = $('#dataTable').bootstrapTable('getSelections');
+      if(selectedRows == '') {
+          alert('请选择要删除的行');
+          return;
+      }
+      if(window.confirm('确定删除'+selectedRows.length+'条记录?')){
+          var uuids = '';
+          for(var i=0; i<selectedRows.length; i++) {
+              uuids += selectedRows[i].uUID+',';
+          }
+          $.ajax({
+              type: 'POST',
+              url: $('#path').val()+'/users/deleteSelections',
+              data: {uuids: uuids},
+              success: function(result) {
+                  var res = eval(result);
+                  alert(res['message']);
+                  $('#dataTable').bootstrapTable('refresh');
+              },
+              error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  alert(errorThrown);
+              }
+          });
+      }
+  }
 
   function addOrgModal(parentOrgID) {
       $("#addOrgModal").modal("show");
@@ -179,146 +282,128 @@
   }, "请正确填写您的联系电话(手机)");
 
   var orgInfo = new Vue({
-        el: '#orgInfo',
-        data: {
-            orgID: '',
-            orgName: '',
-            orgTypeID: '',
-            orgTel: '',
-            orgLoc: '',
-            orgDesc: ''
-        },
-        methods: {
-            validate: function () {
-                var errorSymbol = "<span style='color: red; font-size: 18px;'>&nbsp;x</span>";
-                var vform = $("#vform");
-                vform.validate({
-                    rules: {
-                        orgName: {
-                            required: true,
-                            minlength: 3
-                        },
-                        orgTel: {
-                            required: true,
-                            isPhone: true
-                        },
-                        orgLoc: {
-                            required: true,
-                            minlength: 6
-                        },
-                        orgTypeID: {
-                            required: true
-                        }
-                    },
-                    messages: {
-                        orgName: {
-                            required: errorSymbol,
-                            minlength: "<span style='color: red; font-size: 14px;'>&nbsp;组织机构名称长度不能少于3个字符</span>"
-                        },
-                        orgTel: {
-                            required: errorSymbol,
-                            isPhone: "<span style='color: red; font-size: 14px;'>&nbsp;固话格式: 区号-座机号</span>"
-                        },
-                        orgLoc: {
-                            required: errorSymbol,
-                            minlength: "<span style='color: red; font-size: 14px;'>&nbsp;组织机构地址长度不能少于6个字符</span>"
-                        },
-                        orgTypeID: {
-                            required: "<span style='color: red; font-size: 14px;'>&nbsp;请选择组织机构类型</span>"
-                        }
-                    }
-                });
-                return vform;
-            },
-            add: function () {
-                var url = $("#path").val() + '/org/add';
-                var parentOrgID = $("#parentOrgID").val();
+      el: '#orgInfo',
+      data: {
+          orgID: '',
+          orgName: '',
+          orgTypeID: '',
+          orgTel: '',
+          orgLoc: '',
+          orgDesc: ''
+      },
+      methods: {
+          validate: function () {
+              var errorSymbol = "<span style='color: red; font-size: 18px;'>&nbsp;x</span>";
+              var vform = $("#vform");
+              vform.validate({
+                  rules: {
+                      orgName: {
+                          required: true,
+                          minlength: 3
+                      },
+                      orgTel: {
+                          required: true,
+                          isPhone: true
+                      },
+                      orgLoc: {
+                          required: true,
+                          minlength: 6
+                      },
+                      orgTypeID: {
+                          required: true
+                      }
+                  },
+                  messages: {
+                      orgName: {
+                          required: errorSymbol,
+                          minlength: "<span style='color: red; font-size: 14px;'>&nbsp;组织机构名称长度不能少于3个字符</span>"
+                      },
+                      orgTel: {
+                          required: errorSymbol,
+                          isPhone: "<span style='color: red; font-size: 14px;'>&nbsp;固话格式: 区号-座机号</span>"
+                      },
+                      orgLoc: {
+                          required: errorSymbol,
+                          minlength: "<span style='color: red; font-size: 14px;'>&nbsp;组织机构地址长度不能少于6个字符</span>"
+                      },
+                      orgTypeID: {
+                          required: "<span style='color: red; font-size: 14px;'>&nbsp;请选择组织机构类型</span>"
+                      }
+                  }
+              });
+              return vform;
+          },
+          add: function () {
+              var url = $("#path").val() + '/org/add';
+              var parentOrgID = $("#parentOrgID").val();
 
-                if(this.validate().valid() == false) {
-                    alert('数据项录入有误, 请按照提示修改');
-                    return;
-                }
-                $.ajax({
-                    type: "POST",
-                    url: url,
-                    data: {parentOrgID: parentOrgID, orgname: this.orgName, orgtypeID: this.orgTypeID, orgtel: this.orgTel,
-                        orgloc: this.orgLoc, orgdesc: this.orgDesc},
-                    success: function(result) {
-                        var res = eval(result);
-                        alert(res["message"]);
-                        location.reload();
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        alert(errorThrown);
-                    }
-                });
-            },
-            update: function () {
-                if(this.validate().valid() == false) {
-                    alert('数据项录入有误, 请按照提示修改');
-                    return;
-                }
-                var url = $("#path").val() + '/org/update';
+              if(this.validate().valid() == false) {
+                  alert('数据项录入有误, 请按照提示修改');
+                  return;
+              }
+              $.ajax({
+                  type: "POST",
+                  url: url,
+                  data: {parentOrgID: parentOrgID, orgname: this.orgName, orgtypeID: this.orgTypeID, orgtel: this.orgTel,
+                      orgloc: this.orgLoc, orgdesc: this.orgDesc},
+                  success: function(result) {
+                      var res = eval(result);
+                      alert(res["message"]);
+                      $('#dataTable').bootstrapTable('refresh');
+                      $("#addOrgModal").modal("hide");
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          },
+          update: function () {
+              if(this.validate().valid() == false) {
+                  alert('数据项录入有误, 请按照提示修改');
+                  return;
+              }
+              var url = $("#path").val() + '/org/update';
 
-                $.ajax({
-                    type: "POST",
-                    url: url,
-                    data: {orgID: this.orgID, orgname: this.orgName, orgtypeID: this.orgTypeID, orgtel: this.orgTel,
-                        orgloc: this.orgLoc, orgdesc: this.orgDesc},
-                    success: function(result) {
-                        var res = eval(result);
-                        alert(res["message"]);
-                        location.reload();
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        alert(errorThrown);
-                    }
-                });
-            }
-        }
-    });
+              $.ajax({
+                  type: "POST",
+                  url: url,
+                  data: {orgID: this.orgID, orgname: this.orgName, orgtypeID: this.orgTypeID, orgtel: this.orgTel,
+                      orgloc: this.orgLoc, orgdesc: this.orgDesc},
+                  success: function(result) {
+                      var res = eval(result);
+                      alert(res["message"]);
+                      $('#dataTable').bootstrapTable('refresh');
+                      $("#addOrgModal").modal("hide");
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          }
+      }
+  });
 
-    function loadOrgInfo(orgID) {
-        var url = $('#path').val() + '/org/get'
-        $.ajax({
-            type: "POST",
-            url: url,
-            data: {orgID: orgID},
-            success: function(result) {
-                var org = eval(result);
-                orgInfo.orgID = org.id;
-                orgInfo.orgName = org.name;
-                orgInfo.orgTypeID = org.orgTypeCode;
-                orgInfo.orgTel = org.tel;
-                orgInfo.orgLoc = org.location;
-                orgInfo.orgDesc = org.orgDesc;
-                addOrgModal(org.pid);
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                alert(errorThrown);
-            }
-        });
-    }
-
-    function deleteOrg(orgID) {
-        var path = $("#path").val();
-        if(window.confirm("确定删除该组织机构及其附属所有机构?")){
-            $.ajax({
-                type: "POST",
-                url: path + "/org/delete",
-                data: {orgID: orgID},
-                success: function(result) {
-                    var res = eval(result)
-                    alert(res["message"]);
-                    location.reload();
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(errorThrown);
-                }
-            });
-        }
-        return;
-    }
+  function loadOrgInfo(orgID) {
+      var url = $('#path').val() + '/org/get'
+      $.ajax({
+          type: "POST",
+          url: url,
+          data: {orgID: orgID},
+          success: function(result) {
+              var org = eval(result);
+              orgInfo.orgID = org.id;
+              orgInfo.orgName = org.name;
+              orgInfo.orgTypeID = org.orgTypeCode;
+              orgInfo.orgTel = org.tel;
+              orgInfo.orgLoc = org.location;
+              orgInfo.orgDesc = org.orgDesc;
+              addOrgModal(org.pid);
+          },
+          error: function (XMLHttpRequest, textStatus, errorThrown) {
+              alert(errorThrown);
+          }
+      });
+  }
 
   $('#addOrgModal').on('hidden.bs.modal', function () {
       clearForm($('#vform'));
@@ -338,17 +423,6 @@
               this.selectedIndex = -1;
       });
   };
-
-  $("#example-basic-expandable").treetable({
-      expandable: true,
-      initialState: 'expanded'
-  });
-
-  // Highlight selected row
-  $("#example-basic-expandable tbody").on("mousedown", "tr", function() {
-      $(".selected").not(this).removeClass("selected");
-      $(this).toggleClass("selected");
-  });
 
   /*]]>*/
 </script>
