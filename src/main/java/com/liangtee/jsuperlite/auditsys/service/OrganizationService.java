@@ -160,7 +160,7 @@ public class OrganizationService extends BaseService<Organization, Integer> {
 
         int hierarchicalLevel = 1;
 
-        if(parentOrgID == -1) return hierarchicalLevel;
+        if(parentOrgID == -1 || parentOrgID == 0) return hierarchicalLevel;
 
         hierarchicalLevel++;
 

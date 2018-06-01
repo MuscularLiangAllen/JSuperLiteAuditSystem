@@ -425,7 +425,9 @@
                   success: function(result) {
                       var res = eval(result)
                       alert(res["message"]);
-                      window.location.reload();
+//                      window.location.reload();
+                      $('#dataTable').bootstrapTable('refresh');
+                      $("#addUserModal").modal("hide");
                   },
                   error: function (XMLHttpRequest, textStatus, errorThrown) {
                       alert(errorThrown);

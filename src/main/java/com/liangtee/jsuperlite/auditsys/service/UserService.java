@@ -82,18 +82,29 @@ public class UserService extends BaseService<User, Long> {
             result = new LinkedList<Object>();
             Map<Integer, List<User>> userMap = groupByDeptID(pageModel, "CREATE_TIME", ASC, conditions, params);
             for(Organization org : organizations) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("name", org.getOrgName());
+                jsonObject.put("userTypeName", "");
+                jsonObject.put("eMail", "");
+                jsonObject.put("phoneNumber", "");
+                jsonObject.put("createTime", "");
+                jsonObject.put("isActive", "");
+                jsonObject.put("type", org.getOrgType());
+                jsonObject.put("id", org.getID());
+                jsonObject.put("pid", org.getBelongTo() == -1 ? 0 : org.getBelongTo());
+                result.add(jsonObject);
                 if (userMap.containsKey(org.getID())) {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("name", org.getOrgName());
-                    jsonObject.put("userTypeName", "");
-                    jsonObject.put("eMail", "");
-                    jsonObject.put("phoneNumber", "");
-                    jsonObject.put("createTime", "");
-                    jsonObject.put("isActive", "");
-                    jsonObject.put("type", org.getOrgType());
-                    jsonObject.put("id", org.getID());
-                    jsonObject.put("pid", org.getBelongTo() == -1 ? 0 : org.getBelongTo());
-                    result.add(jsonObject);
+//                    JSONObject jsonObject = new JSONObject();
+//                    jsonObject.put("name", org.getOrgName());
+//                    jsonObject.put("userTypeName", "");
+//                    jsonObject.put("eMail", "");
+//                    jsonObject.put("phoneNumber", "");
+//                    jsonObject.put("createTime", "");
+//                    jsonObject.put("isActive", "");
+//                    jsonObject.put("type", org.getOrgType());
+//                    jsonObject.put("id", org.getID());
+//                    jsonObject.put("pid", org.getBelongTo() == -1 ? 0 : org.getBelongTo());
+//                    result.add(jsonObject);
                     result.addAll(userMap.get(org.getID()));
                 }
             }

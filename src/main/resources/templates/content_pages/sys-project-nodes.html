@@ -295,7 +295,8 @@
                 offset: params.offset,
                 keyword: params.search,//搜索
                 sort: params.sort,//排序
-                order:params.order//排序字段
+                order:params.order,//排序字段,
+                projectID: [[${projectID}]]
             };
             return temp;
         };

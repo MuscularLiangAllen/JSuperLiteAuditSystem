@@ -9,7 +9,6 @@
         idField: 'id',
         parentIdField: 'pid',
         onGetNodes: function (row, data) {
-            console.log("xxx");
             var that = this;
             var nodes = [];
             $.each(data, function (i, item) {
@@ -20,8 +19,6 @@
             return nodes;
         },
         onCheckRoot: function (row, data) {
-            console.log("yyy");
-            console.log(this.options.treeShowField);
             var that = this;
             return !row[that.options.parentIdField];
         }

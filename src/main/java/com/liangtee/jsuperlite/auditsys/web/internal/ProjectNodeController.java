@@ -87,12 +87,12 @@ public class ProjectNodeController extends BaseController {
         if(keyword != null && !keyword.isEmpty()) {
             keyword = "%" + keyword.trim() + "%";
             projectNodeList = projectNodeService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC,
-                    "PROJECT_ID = ? AND (NAME like ? OR NODE_DESC like ?)", projectID, keyword, keyword);
+                    "BELONG_TO = ? AND (NAME like ? OR NODE_DESC like ?)", projectID, keyword, keyword);
         } else {
-            projectNodeList = projectNodeService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC, "PROJECT_ID = ?", projectID);
+            projectNodeList = projectNodeService.findByPage(pageModel, sort, order.equalsIgnoreCase("ASC") ? ASC : DESC, "BELONG_TO = ?", projectID);
         }
 
-        int totalSize = projectNodeService.count("PROJECT_ID = ?", projectID);
+        int totalSize = projectNodeService.count("BELONG_TO = ?", projectID);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("rows", projectNodeList);

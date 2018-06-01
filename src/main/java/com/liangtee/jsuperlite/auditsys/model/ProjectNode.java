@@ -14,6 +14,9 @@ public class ProjectNode implements Comparable<ProjectNode> {
     @Column(name = "ID")
     private String id;
 
+    /**
+     * Belong to which Project
+     */
     @Column(name = "BELONG_TO", nullable = false)
     private String belongTo;
 
