@@ -57,18 +57,43 @@
       </li>
       <li class="treeview">
         <a href="javascript:void(0);">
-          <i class="fa fa-tasks"></i>
+          <i class="fa fa-cubes"></i>
           <span>业务流程</span>
           <span class="pull-right-container">
               <i class="fa fa-angle-left pull-right"></i>
             </span>
         </a>
         <ul class="treeview-menu" style="display: none;">
-          <!--<li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show?create=true');"><i class="fa fa-circle-o"></i>新建项目</a></li>-->
-          <!--<li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show');"><i class="fa fa-circle-o"></i>业务列表</a></li>-->
-          <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show2?category=projectNode');"><i class="fa fa-circle-o"></i>工程节点</a></li>
-          <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show2?category=projectVisa');"><i class="fa fa-circle-o"></i>工程签证</a></li>
-          <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show2?category=hiddenProject');"><i class="fa fa-circle-o"></i>隐蔽工程</a></li>
+          <li class="treeview">
+            <a href="javascript:void(0);">
+              <i class="fa fa-dot-circle-o"></i>
+              <span>跟踪审计</span>
+              <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+            </a>
+            <ul class="treeview-menu" style="display: none;">
+              <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show2?category=projectNode');"><i class="fa fa-circle-o"></i>工程节点</a></li>
+              <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show2?category=projectVisa');"><i class="fa fa-circle-o"></i>工程签证</a></li>
+              <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show2?category=hiddenProject');"><i class="fa fa-circle-o"></i>隐蔽工程</a></li>
+            </ul>
+          </li>
+
+          <li class="treeview">
+            <a href="javascript:void(0);">
+              <i class="fa fa-dot-circle-o"></i>
+              <span>结算审计</span>
+              <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+            </a>
+            <ul class="treeview-menu" style="display: none;">
+              <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show2?category=projectNode');"><i class="fa fa-circle-o"></i>结算审计表</a></li>
+              <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show2?category=projectVisa');"><i class="fa fa-circle-o"></i>工程签证</a></li>
+              <li><a href="javascript:void(0);" onclick="javascript:$('#mainContentFrame').attr('src', '/auditsys/audits/show2?category=hiddenProject');"><i class="fa fa-circle-o"></i>隐蔽工程</a></li>
+            </ul>
+          </li>
+
         </ul>
       </li>
       <li class="treeview" onclick="changePage(this, '/auditsys/files/show')">
