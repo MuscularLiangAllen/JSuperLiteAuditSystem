@@ -137,7 +137,7 @@ public class FileService extends BaseService<FileInfo, String> {
             } else {
                 //if the deleted file is folder type
                 //move to trash folder
-                FileUtils.moveTo(deletedFile.getFilePath(), System.getProperty("sys.trash") + PATH_SEPARATOR + deletedFile.getFileName());
+                FileUtils.moveTo(deletedFile.getFilePath(), System.getProperty("sys.trash") + PATH_SEPARATOR + deletedFile.getFileName()+"_"+TimeFormater.format("yyMMddHHmm"));
                 findAll("PARENT_FOLDER_ID = ?", fileID).forEach(f -> {
 //                    esFileRepository.delete(f.getUUID());
                     fileRepository.delete(f.getUUID());
@@ -299,9 +299,7 @@ public class FileService extends BaseService<FileInfo, String> {
     public FileInfo createFile(User user, String fileName, int isFolder, String parentFolderID, String fileDesc, String grantedUsers,
                            String tmpFileID, String belongToID, int editable) {
         String dirBase = null;
-
         String savedPath = null;
-
         FileInfo parentFile = null;
 
         if(parentFolderID.equalsIgnoreCase(NO_PARENT_FOLDER))

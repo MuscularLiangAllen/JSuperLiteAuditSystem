@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="/modules/header::css_library"></head>
+
+<link rel="stylesheet" th:href="@{/plugins/bootstrap-switch/bootstrap-switch.min.css}"/>
+<link rel="stylesheet" th:href="@{/plugins/bootstrap-table/bootstrap-table.min.css}"/>
+
+<style type="text/css">
+  .reportform>tbody>tr>td {
+    border: 1px solid #bbb !important;
+  }
+</style>
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+    <section class="content-header">
+      <h1>
+        结算审计表
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
+        <li class="active">综合信息</li>
+      </ol>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <input id="path" type="hidden" th:value="@{/auditsys}"></input>
+      <!-- Main row -->
+      <div class="row">
+        <!-- Left col -->
+        <section class="col-lg-12 col-md-12 connectedSortable">
+
+          <div class="box box-primary">
+            <!-- /.box-header -->
+            <div class="box-body ">
+              <div id="toolbar" class="btn-group">
+                <span style="font-size: 20px;">报表详情</span>
+              </div>
+
+              <th:block th:if="${jieSuanReportForm != null}">
+                  <p style="margin-top: 20px;" th:text="${'上次填报时间: ' + jieSuanReportForm.time}"></p>
+                  <th:block th:if="${jieSuanReportForm.isGranted == 1}">
+                    <p>当前状态: <label style="color: #00a65a;">审计通过</label></p>
+                  </th:block>
+                  <th:block th:if="${jieSuanReportForm.isGranted == 0}">
+                    <p>当前状态: <label style="color: #0063dc;">审计中</label></p>
+                  </th:block>
+                  <th:block th:if="${jieSuanReportForm.isGranted == -1}">
+                    <p>当前状态: <label style="color: #c12e2a;">审计驳回</label></p>
+                  </th:block>
+              </th:block>
+
+              <table class="table table-bordered reportform" style="margin-top: 20px; width: 1000px;">
+                <tbody>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">报审部门 (必填)</td>
+                  <th:block th:if="${jieSuanReportForm == null}">
+                    <td id="bsbm" style="background: #fff; color: #9f191f;" colspan="3" contentEditable="plaintext-only"></td>
+                  </th:block>
+                  <th:block th:if="${jieSuanReportForm != null}">
+                    <td id="bsbm" style="background: #fff; color: #9f191f;" colspan="3" contentEditable="plaintext-only" th:text="${jieSuanReportForm.bsbm}"></td>
+                  </th:block>
+                </tr>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">工程名称</td>
+                  <td id="projectName" style="background: #fff; color: #0d6aad;" colspan="3" th:text="${project.projectName}"></td>
+                </tr>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">详细地址</td>
+                  <td id="projectLoc" style="background: #fff; color: #0d6aad;" colspan="3" th:text="${project.projectLoc}"></td>
+                </tr>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">项目负责人</td>
+                  <td id="projectLeaderName" style="background: #fff; color: #0d6aad; width: 340px;" th:text="${project.projectLeaderName}"></td>
+                  <td style="width: 200px;">联系电话</td>
+                  <td id="projectLeaderTel" style="background: #fff; color: #0d6aad; width: 340px;" th:text="${project.projectLeaderTel}"></td>
+                </tr>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">合同金额</td>
+                  <td id="contractPrice" style="background: #fff; color: #0d6aad; width: 340px;" th:text="${project.contractPrice}"></td>
+                  <td style="width: 200px;">报审金额 (必填)</td>
+                  <th:block th:if="${jieSuanReportForm == null}">
+                    <td id="submitCost" style="background: #fff; color: #9f191f; width: 340px;" contentEditable="plaintext-only"></td>
+                  </th:block>
+                  <th:block th:if="${jieSuanReportForm != null}">
+                    <td id="submitCost" style="background: #fff; color: #9f191f; width: 340px;" contentEditable="plaintext-only" th:text="${jieSuanReportForm.bsje}"></td>
+                  </th:block>
+                </tr>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">已付工程款额 (必填)</td>
+                  <th:block th:if="${jieSuanReportForm == null}">
+                    <td id="paidCost" style="background: #fff; color: #9f191f; width: 340px;" contentEditable="plaintext-only"></td>
+                  </th:block>
+                  <th:block th:if="${jieSuanReportForm != null}">
+                    <td id="paidCost" style="background: #fff; color: #9f191f; width: 340px;" contentEditable="plaintext-only" th:text="${jieSuanReportForm.yfje}"></td>
+                  </th:block>
+                  <td style="width: 200px;">是否招投标、招标方式</td>
+                  <td id="bidType" style="background: #fff; color: #0d6aad; width: 340px;" th:text="${project.bidType}"></td>
+                </tr>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">施工单位名称</td>
+                  <td id="contractorName" style="background: #fff; color: #0d6aad; width: 340px;" th:text="${project.projectContractorName}"></td>
+                  <td style="width: 200px;">施工单位联系人、联系电话</td>
+                  <td id="contractorTel" style="background: #fff; color: #0d6aad; width: 340px;" th:text="${project.contractorManagerName + ' / ' + project.contractorManagerTel}"></td>
+                </tr>
+                </tbody>
+              </table>
+
+              <th:block th:if="${jieSuanReportForm != null and jieSuanReportForm.isGranted == 1}">
+                <div style="padding: 10px; margin-top: 20px; border: 1px solid #bbb; background: whitesmoke; border-radius: 3px; width: 1000px;">
+                  <div style="font-size: 16px;">该项目结算审计已通过, 请下载打印介绍审计表</div>
+                </div>
+              </th:block>
+              <th:block th:if="${jieSuanAuditResult != null}">
+                <div style="padding: 10px; margin-top: 20px; border: 1px solid #E9CBCD; background: #F2DEDF; border-radius: 3px; width: 1000px;">
+                  <div style="font-size: 14px; color: #c12e2a;">结算审计表被驳回, 理由如下:
+                    <table class="table table-bordered" style="width: 600px; margin-top: 10px;">
+                      <tr>
+                        <td style="width: 90px;">审定值: </td><td th:text="${jieSuanAuditResult.shenDing_val}"></td>
+                      </tr>
+                      <tr>
+                        <td style="width: 90px;">审减值: </td><td th:text="${jieSuanAuditResult.shenJian_val}"></td>
+                      </tr>
+                      <tr>
+                        <td style="width: 90px;">审减理由: </td><td th:utext="${jieSuanAuditResult.reasons}"></td>
+                      </tr>
+                    </table>
+                    <p>请酌情修改!</p>
+                  </div>
+                </div>
+              </th:block>
+              <th:block th:if="${jieSuanReportForm == null or (jieSuanReportForm != null and jieSuanReportForm.isGranted != 1)}">
+                <div style="margin-top: 30px;">
+                  <button class="btn btn-success" onclick="submit()">提交</button>
+                </div>
+              </th:block>
+
+            </div>
+            <!-- /.box-body -->
+
+          </div>
+          <!-- /.box -->
+
+        </section>
+      </div>
+      <!-- /.row (main row) -->
+
+    </section>
+    <!-- /.content -->
+
+<div th:replace="/modules/bottom::js_library"></div>
+
+<script th:src="@{/plugins/bootstrap-switch/bootstrap-switch.min.js}"></script>
+
+<script th:src="@{/plugins/bootstrap-table/bootstrap-table.min.js}"></script>
+<script th:src="@{/plugins/bootstrap-table/bootstrap-table-zh-CN.min.js}"></script>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+
+  function submit() {
+      var path = $("#path").val();
+      var bsbm = $("#bsbm").text();
+      // var projectName = $("#projectName").text();
+      // var projectLoc = $("#projectLoc").text();
+      // var projectLeaderName = $("#projectLeaderName").text();
+      // var projectLeaderTel = $("#projectLeaderTel").text();
+      // var contractPrice = $("#contractPrice").text();
+      var submitCost = $("#submitCost").text();
+      var paidCost = $("#paidCost").text();
+      // var bidType = $("#bidType").text();
+      // var contractorName = $("#contractorName").text();
+      // var contractorTel = $("#contractorTel").text();
+
+      var projectID = [[${project.ID}]];
+
+      // if(bsbm == null || bsbm == "" || projectName == null || projectName == "" || projectLoc == null || projectLoc == "" || projectLeaderName == null ||
+      // projectLeaderName == "" || projectLeaderTel == null || projectLeaderTel == "" || contractPrice == null || contractPrice == ""
+      // || submitCost == null || submitCost == "" || paidCost == null || paidCost == "" || bidType == null || bidType == "" ||
+      // contractorName == null || contractorName == "" || contractorTel == null || contractorTel == "") {
+      //     alert("表中不能有空缺项!");
+      // }
+
+      if(bsbm == null || bsbm == "" || submitCost == null || submitCost == "" || paidCost == null || paidCost == "") {
+          alert("表中不能有空缺项!");
+          return;
+      }
+
+      // if(!isNaN(submitCost) || !isNaN(paidCost)) {
+      //     alert("金额应为数字");
+      //     return;
+      // }
+
+      $.ajax({
+          type: "POST",
+          url: path + "/edit-jiesuan-forms/submit-form",
+          // data: {bsbm: bsbm, projectID: projectID, projectName: projectName, projectLoc: projectLoc, projectLeaderName: projectLeaderName, projectLeaderTel: projectLeaderTel,
+          //     contractPrice: contractPrice, submitCost: submitCost, paidCost: paidCost, bidType: bidType, contractorName: contractorName,
+          //     contractorTel: contractorTel
+          // },
+          data: {bsbm: bsbm, projectID: projectID, submitCost: submitCost, paidCost: paidCost},
+          success: function(result) {
+              var res =  eval("("+result+")");
+              alert(res["message"]);
+              window.location.reload();
+          },
+          error: function (XMLHttpRequest, textStatus, errorThrown) {
+              alert(errorThrown);
+          }
+      });
+
+  }
+
+  /*]]>*/
+</script>
+
+</body>
+</html>

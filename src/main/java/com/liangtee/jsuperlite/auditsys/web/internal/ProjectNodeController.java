@@ -112,7 +112,7 @@ public class ProjectNodeController extends BaseController {
                                                   HttpServletRequest request, Model model) {
 
         if(projectNodeService.isExist("BELONG_TO = ? AND NAME = ?", projectID, projectNodeName)) {
-            JSON.toJSONString(new ReturnMessage("该节点名已存在, 同一工程下不能存在相同名称节点!"));
+           return JSON.toJSONString(new ReturnMessage("该节点名已存在, 同一工程下不能存在相同名称节点!"));
         }
 
         int seq = (int) (projectNodeService.count("BELONG_TO = ?", projectID)+1);

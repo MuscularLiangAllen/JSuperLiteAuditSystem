@@ -15,7 +15,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "T_PROJECT_INFO")
-//@Document(indexName = "jsuperliteauditsys",type = "projectinfo")
+//@Document(indexName = "jsuperliteauditsys", type = "projectinfo")
 public class Project {
 
     @Id
@@ -109,6 +109,12 @@ public class Project {
     @Column(name = "MATERIAL_LIST")
     private String materialList;
 
+    /**
+     * 跟踪设计、结算审计、审计完结
+     */
+    @Column(name = "STATUS")
+    private String status;
+
     public Project(){}
 
     public Project(String projectName, String projectLoc, String expectedStartDate, String expectedEndDate, String startDate, String endDate, int projectDuration, String bidType, double ctrlPrice, String contractType, double contractPrice, String projectLeaderName, String projectLeaderTel, String projectContractorName, String contractorManagerName, String contractorManagerTel, String supervisionName, String supervisorName, String supervisorTel, String projectObjectives, String projectMainContent, String leadingOrg, String leadingOrgIDs) {
@@ -136,6 +142,7 @@ public class Project {
         this.projectMainContent = projectMainContent;
         this.leadingOrg = leadingOrg;
         this.leadingOrgIDs = leadingOrgIDs;
+        this.status = "跟踪审计";
     }
 
     public Project(String projectID, String projectName, String projectLoc, String expectedStartDate, String expectedEndDate, String startDate, String endDate, int projectDuration, String bidType, double ctrlPrice, String contractType, double contractPrice, String projectLeaderName, String projectLeaderTel, String projectContractorName, String contractorManagerName, String contractorManagerTel, String supervisionName, String supervisorName, String supervisorTel, String projectObjectives, String projectMainContent, String leadingOrg, String leadingOrgIDs) {
@@ -163,6 +170,7 @@ public class Project {
         this.projectMainContent = projectMainContent;
         this.leadingOrg = leadingOrg;
         this.leadingOrgIDs = leadingOrgIDs;
+        this.status = "跟踪审计";
     }
 
     public String getID() {
@@ -367,5 +375,13 @@ public class Project {
 
     public void setLeadingOrgIDs(String leadingOrgIDs) {
         this.leadingOrgIDs = leadingOrgIDs;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -80,8 +80,6 @@ public class FileMGMTController extends BaseController {
         jsonObject.put("rows", fileInfoList);
         jsonObject.put("total", totalSize);
 
-        System.out.println(jsonObject.toJSONString());
-
         return jsonObject.toJSONString();
     }
 
@@ -107,7 +105,6 @@ public class FileMGMTController extends BaseController {
                                     HttpServletRequest request) {
 
         User user = (User) request.getSession().getAttribute("user");
-
         fileService.createFile(user, fileName, fileType.equals("folder") ? FileInfo.FOLDER_TYPE : FileInfo.FILE_TYPE, parentFolderID, fileDesc, grantedUsers, tmpFileID, "", FileInfo.EDITABLE);
 
         return JSON.toJSONString(new ReturnMessage("创建文件成功"), SerializerFeature.DisableCircularReferenceDetect);
@@ -158,16 +155,20 @@ public class FileMGMTController extends BaseController {
     @RequestMapping(path = "deleteSelections", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     public @ResponseBody String deleteSelections(@RequestParam(value = "uuids", required = true) String uuids) {
 
-        List<Object[]> values = new ArrayList<Object[]>();
+        StringBuffer unDeleted = new StringBuffer("");
         Arrays.stream(uuids.split(",")).forEach(UUID -> {
-            values.add(new Object[]{UUID});
+            FileInfo deleted = fileService.get(UUID);
+            if(deleted.getEditable() == FileInfo.EDITABLE && getOperator().getUserType() >= User.USER_TYPE_ADMIN) {
+                if(!fileService.delete(UUID))
+                    logger.info("文件:"+UUID+"删除失败");
+            } else {
+               unDeleted.append(deleted.getFileName()).append(",");
+            }
+
         });
 
-        if(fileService.batchDelete("ID = ?", values) && queryHelper.batchDelete(FileToUser.class, "FILE_ID = ?", values))
-            return JSON.toJSONString(new ReturnMessage("删除成功"));
-
-        return JSON.toJSONString(new ReturnMessage("删除失败"));
-
+        return unDeleted.toString().isEmpty() ? JSON.toJSONString(new ReturnMessage("删除成功")) :
+                 JSON.toJSONString(new ReturnMessage("删除下列文件权限不足: " + unDeleted.toString()));
     }
 
     @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_PROJ_CONTROCTOR)

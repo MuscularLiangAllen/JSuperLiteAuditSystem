@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="/modules/header::css_library"></head>
+
+<script th:src="@{/plugins/ckeditor/ckeditor.js}"></script>
+
+
+<style type="text/css">
+  .reportform>tbody>tr>td {
+    border: 1px solid #bbb !important;
+  }
+</style>
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+    <section class="content-header">
+      <h1>
+        结算审计表
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> 系统</a></li>
+        <li class="active">综合信息</li>
+      </ol>
+    </section>
+
+    <section class="content">
+      <input id="path" type="hidden" th:value="@{/auditsys}"></input>
+      <div class="row">
+        <section class="col-lg-12 col-md-12 connectedSortable">
+
+          <div class="box box-primary">
+            <div class="box-body ">
+              <div>
+                <span style="font-size: 20px;">报表详情</span>
+              </div>
+
+              <th:block th:if="${jieSuanReportForm != null}">
+                  <p style="margin-top: 10px;" th:text="${'上次填报时间: ' + jieSuanReportForm.time}"></p>
+                  <th:block th:if="${jieSuanReportForm.isGranted == 1}">
+                    <p>当前状态: <label style="color: #00a65a;">审计通过</label></p>
+                  </th:block>
+                  <th:block th:if="${jieSuanReportForm.isGranted == 0}">
+                    <p>当前状态: <label style="color: #0063dc;">审计中</label></p>
+                  </th:block>
+                  <th:block th:if="${jieSuanReportForm.isGranted == -1}">
+                    <p style="color: #c12e2a;">当前状态: <label style="color: #c12e2a;">审计驳回</label></p>
+                  </th:block>
+              </th:block>
+
+              <table class="table table-bordered reportform" style="margin-top: 20px; width: 1000px;">
+                <tbody>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">报审部门 (必填)</td>
+                  <td id="bsbm" style="background: #fff; color: #9f191f;" colspan="3">******</td>
+                </tr>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">工程名称</td>
+                  <td id="projectName" style="background: #fff; color: #0d6aad;" colspan="3" th:text="${project.projectName}"></td>
+                </tr>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">详细地址</td>
+                  <td id="projectLoc" style="background: #fff; color: #0d6aad;" colspan="3" th:text="${project.projectLoc}"></td>
+                </tr>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">项目负责人</td>
+                  <td id="projectLeaderName" style="background: #fff; color: #0d6aad; width: 340px;">******</td>
+                  <td style="width: 200px;">联系电话</td>
+                  <td id="projectLeaderTel" style="background: #fff; color: #0d6aad; width: 340px;">******</td>
+                </tr>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">合同金额</td>
+                  <td id="contractPrice" style="background: #fff; color: #0d6aad; width: 340px;" th:text="${project.contractPrice}"></td>
+                  <td style="width: 200px;">报审金额 (必填)</td>
+                  <td id="submitCost" style="background: #fff; color: #9f191f; width: 340px;" th:text="${jieSuanReportForm.bsje}"></td>
+                </tr>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">已付工程款额 (必填)</td>
+                  <td id="paidCost" style="background: #fff; color: #9f191f; width: 340px;" th:text="${jieSuanReportForm.yfje}"></td>
+                  <td style="width: 200px;">是否招投标、招标方式</td>
+                  <td id="bidType" style="background: #fff; color: #0d6aad; width: 340px;" th:text="${project.bidType}"></td>
+                </tr>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px;">施工单位名称</td>
+                  <td id="contractorName" style="background: #fff; color: #0d6aad; width: 340px;">******</td>
+                  <td style="width: 200px;">施工单位联系人、联系电话</td>
+                  <td id="contractorTel" style="background: #fff; color: #0d6aad; width: 340px;">******</td>
+                </tr>
+                </tbody>
+              </table>
+
+              <!--<th:block th:if="${jieSuanReportForm.isGranted == 1}">-->
+                <!--<div style="padding: 10px; margin-top: 20px; border: 1px solid #bbb; background: whitesmoke; border-radius: 3px; width: 1000px;">-->
+                  <!--<div style="font-size: 16px;">该项目结算审计工作已完成</div>-->
+                <!--</div>-->
+              <!--</th:block>-->
+              <th:block th:if="${jieSuanReportForm.isGranted != 100}">
+                <div style="padding: 10px; margin-top: 20px; border: 1px solid #bbb; background: whitesmoke; border-radius: 3px; width: 1000px;">
+                  <div style="font-size: 20px;">审计操作</div>
+                  <div style="margin-top: 10px;">
+                    <input type="radio" name="audit_result" value="granted" onclick="javascript:$('#audit-zone').hide('normal');"/>审计通过&nbsp;&nbsp;
+                    <input type="radio" name="audit_result" value="banned" checked="checked" onclick="javascript:$('#audit-zone').show('normal');"/>审计驳回
+                  </div>
+                </div>
+                <div id="audit-zone" style="padding: 10px; margin-top: 10px; border: 1px solid #bbb; background: whitesmoke; border-radius: 3px; width: 1000px;">
+                  审定值: <input id="shending_val" type="number" onchange="calculate(this.value);"/>&nbsp;&nbsp;&nbsp;&nbsp;审减值: <input id="shenjian_val" type="number" readonly="readonly"/>
+                  <br/><br/>
+                  审减原因:<br/>
+                  <textarea name="reasons" id="reasons"></textarea>
+                  <script>
+                      var editor = CKEDITOR.replace('reasons',
+                          { toolbar:[
+                                  ['PasteFromWord'],
+                                  ['Bold','Italic','Underline','Strike'],
+                                  ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],
+                                  ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
+                                  ['Styles','Format','Font','FontSize'],
+                                  ['TextColor','BGColor']
+                              ], width:900, height:200, uiColor:'#f1e4db' }
+                      );
+                  </script>
+                </div>
+
+                <div style="margin-top: 30px;">
+                  <button class="btn btn-success" onclick="submit()">提交</button>
+                </div>
+              </th:block>
+
+            </div>
+
+          </div>
+
+        </section>
+      </div>
+
+    </section>
+    <!-- /.content -->
+
+<div th:replace="/modules/bottom::js_library"></div>
+
+<script th:src="@{/plugins/bootstrap-switch/bootstrap-switch.min.js}"></script>
+
+<script th:src="@{/plugins/bootstrap-table/bootstrap-table.min.js}"></script>
+<script th:src="@{/plugins/bootstrap-table/bootstrap-table-zh-CN.min.js}"></script>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+
+  function calculate(val) {
+      var submitCost = $("#submitCost").text();
+      var shenjian_val = submitCost - val;
+      $("#shenjian_val").val(shenjian_val);
+  }
+
+  function submit() {
+      var path = $("#path").val();
+      var projectID = [[${project.ID}]];
+      var audit_result = $('input:radio[name="audit_result"]:checked').val();
+      var shending_val = 0;
+      var shenjian_val = 0;
+      var reasons = "";
+      if(audit_result == "banned") {
+          shending_val = $("#shending_val").val();
+          shenjian_val = $("#shenjian_val").val();
+          reasons = editor.getData();
+      }
+
+      if(audit_result == "banned" && (shending_val == null || shending_val == "" || reasons == null || reasons == "")) {
+          alert("审定值和审减原因不能为空!");
+          return;
+      }
+
+      $.ajax({
+          type: "POST",
+          url: path + "/audit-jiesuan-forms/submit-audits",
+          data: {projectID: projectID, audit_result: audit_result, shending_val: shending_val, shenjian_val: shenjian_val, reasons: reasons},
+          success: function(result) {
+              var res =  eval("("+result+")");
+              alert(res["message"]);
+              window.location.reload();
+          },
+          error: function (XMLHttpRequest, textStatus, errorThrown) {
+              alert(errorThrown);
+          }
+      });
+
+  }
+
+  /*]]>*/
+</script>
+
+</body>
+</html>

@@ -2,14 +2,14 @@
 html,
 body {
   height: 100%;
-  font-family: Arial, "Microsoft YaHei" !important;
+  font-family: Arial, "Microsoft YaHei UI" !important;
 }
 .layout-boxed html,
 .layout-boxed body {
   height: 100%;
 }
 body {
-  font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  /*font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;*/
   font-weight: 400;
   overflow-x: hidden;
   overflow-y: auto;
