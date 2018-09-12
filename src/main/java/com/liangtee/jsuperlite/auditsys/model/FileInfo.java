@@ -93,7 +93,7 @@ public class FileInfo {
 
     public FileInfo(String fileName, String fileType, long fileSize, String fileDesc, long submitterID,
                     String submitterName, String belongToProjectID, String filePath, int isFolder, String parentFolder, int editable) {
-        this.UUID = java.util.UUID.randomUUID().toString();
+        this.UUID = java.util.UUID.randomUUID().toString().replace("-", "");
         this.fileName = fileName;
         this.fileType = fileType;
         this.fileSize = fileSize;

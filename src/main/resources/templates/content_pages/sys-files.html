@@ -537,6 +537,7 @@
   });
 
   $('#addFileModal').on('hidden.bs.modal', function () {
+      uploader.clearStoredFiles();
       fileInfo.clear();
       clearForm($('#vform'));
       $('#vform').validate().resetForm();

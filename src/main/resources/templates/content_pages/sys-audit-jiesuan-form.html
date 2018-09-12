@@ -5,6 +5,9 @@
 
 <script th:src="@{/plugins/ckeditor/ckeditor.js}"></script>
 
+<script th:src="@{/plugins/fineuploader/fine-uploader.core.min.js}"></script>
+<script th:src="@{/plugins/fineuploader/fine-uploader.min.js}"></script>
+
 
 <style type="text/css">
   .reportform>tbody>tr>td {
@@ -89,12 +92,158 @@
                 </tbody>
               </table>
 
-              <!--<th:block th:if="${jieSuanReportForm.isGranted == 1}">-->
-                <!--<div style="padding: 10px; margin-top: 20px; border: 1px solid #bbb; background: whitesmoke; border-radius: 3px; width: 1000px;">-->
-                  <!--<div style="font-size: 16px;">该项目结算审计工作已完成</div>-->
-                <!--</div>-->
-              <!--</th:block>-->
-              <th:block th:if="${jieSuanReportForm.isGranted != 100}">
+              <table class="table table-bordered reportform" style="margin-top: 20px; width: 1000px; text-align: center;">
+                <tbody>
+                <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                  <td style="width: 160px; font-weight: bolder;" colspan="5">报送资料</td>
+                </tr>
+                <th:block th:if="${attachmentMap != null}">
+                  <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                    <td style="width: 20px;">1</td>
+                    <td style="width: 280px;">领导批示</td>
+                    <th:block th:if="${attachmentMap.containsKey(1)}">
+                      <td id="1_status" style="background: #fff; color: #9f191f; width: 80px;"><font color='green'>已上传</font></td>
+                      <td id="1_qty"    style="background: #fff; width: 80px;" th:text="${attachmentMap[1].copies + '份 / ' + attachmentMap[1].pages + '页'}"></td>
+                      <td id="1_btn" style="background: #fff; width: 100px;"><a class="btn btn-info btn-xs" th:href="@{'/auditsys/files/download/'+${attachmentMap[1].attachmentFileID}}">下载</a></td>
+                    </th:block>
+                    <th:block th:if="${!attachmentMap.containsKey(1)}">
+                      <td id="1_status" style="background: #fff; color: #9f191f; width: 80px;">未上传</td>
+                      <td id="1_qty"    style="background: #fff; width: 80px;">0份 / 0页</td>
+                      <td id="1_btn"    style="background: #fff; width: 100px;"></td>
+                    </th:block>
+                  </tr>
+                  <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                    <td style="width: 20px;">2</td>
+                    <td style="width: 280px;">预算书</td>
+                    <th:block th:if="${attachmentMap.containsKey(2)}">
+                      <td id="2_status" style="background: #fff; color: #9f191f; width: 80px;"><font color='green'>已上传</font></td>
+                      <td id="2_qty"    style="background: #fff; width: 80px;" th:text="${attachmentMap[2].copies + '份 / ' + attachmentMap[2].pages + '页'}"></td>
+                      <td id="2_btn"    style="background: #fff; width: 100px;"><a class="btn btn-info btn-xs" th:href="@{'/auditsys/files/download/'+${attachmentMap[2].attachmentFileID}}">下载</a></td>
+                    </th:block>
+                    <th:block th:if="${!attachmentMap.containsKey(2)}">
+                      <td id="2_status" style="background: #fff; color: #9f191f; width: 80px;">未上传</td>
+                      <td id="2_qty"    style="background: #fff; width: 80px;">0份 / 0页</td>
+                      <td id="2_btn"    style="background: #fff; width: 100px;"></td>
+                    </th:block>
+                  </tr>
+                  <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                    <td style="width: 20px;">3</td>
+                    <td style="width: 280px;">招标文件、答疑文件、投标文件、中标通知书</td>
+                    <th:block th:if="${attachmentMap.containsKey(3)}">
+                      <td id="3_status" style="background: #fff; color: #9f191f; width: 80px;"><font color='green'>已上传</font></td>
+                      <td id="3_qty" style="background: #fff; width: 80px;" th:text="${attachmentMap[3].copies + '份 / ' + attachmentMap[3].pages + '页'}"></td>
+                      <td id="3_btn" style="background: #fff; width: 100px;"><a class="btn btn-info btn-xs" th:href="@{'/auditsys/files/download/'+${attachmentMap[3].attachmentFileID}}">下载</a></td>
+                    </th:block>
+                    <th:block th:if="${!attachmentMap.containsKey(3)}">
+                      <td id="3_status" style="background: #fff; color: #9f191f; width: 80px;">未上传</td>
+                      <td id="3_qty" style="background: #fff; width: 80px;">0份 / 0页</td>
+                      <td id="3_btn" style="background: #fff; width: 100px;"></td>
+                    </th:block>
+                  </tr>
+                  <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                    <td style="width: 20px;">4</td>
+                    <td style="width: 280px;">结算书</td>
+                    <th:block th:if="${attachmentMap.containsKey(4)}">
+                      <td id="4_status" style="background: #fff; color: #9f191f; width: 80px;"><font color='green'>已上传</font></td>
+                      <td id="4_qty" style="background: #fff; width: 80px;" th:text="${attachmentMap[4].copies + '份 / ' + attachmentMap[4].pages + '页'}"></td>
+                      <td id="4_btn" style="background: #fff; width: 100px;"><a class="btn btn-info btn-xs" th:href="@{'/auditsys/files/download/'+${attachmentMap[4].attachmentFileID}}">下载</a></td>
+                    </th:block>
+                    <th:block th:if="${!attachmentMap.containsKey(4)}">
+                      <td id="4_status" style="background: #fff; color: #9f191f; width: 80px;">未上传</td>
+                      <td id="4_qty" style="background: #fff; width: 80px;">0份 / 0页</td>
+                      <td id="4_btn" style="background: #fff; width: 100px;"></td>
+                    </th:block>
+                  </tr>
+                  <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                    <td style="width: 20px;">5</td>
+                    <td style="width: 280px;">施工合同及有关补充协议</td>
+                    <th:block th:if="${attachmentMap.containsKey(5)}">
+                      <td id="5_status" style="background: #fff; color: #9f191f; width: 80px;"><font color='green'>已上传</font></td>
+                      <td id="5_qty"    style="background: #fff; width: 80px;" th:text="${attachmentMap[5].copies + '份 / ' + attachmentMap[5].pages + '页'}"></td>
+                      <td id="5_btn"    style="background: #fff; width: 100px;"><a class="btn btn-info btn-xs" th:href="@{'/auditsys/files/download/'+${attachmentMap[5].attachmentFileID}}">下载</a></td>
+                    </th:block>
+                    <th:block th:if="${!attachmentMap.containsKey(5)}">
+                      <td id="5_status" style="background: #fff; color: #9f191f; width: 80px;">未上传</td>
+                      <td id="5_qty" style="background: #fff; width: 80px;">0份 / 0页</td>
+                      <td id="5_btn"    style="background: #fff; width: 100px;"></td>
+                    </th:block>
+                  </tr>
+                  <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                    <td style="width: 20px;">6</td>
+                    <td style="width: 280px;">图纸会审记录、工程设计变更单、技术核定单、工程事项联系单、现场签证单、材料价格核定单、会议纪要等
+                    </td>
+                    <th:block th:if="${attachmentMap.containsKey(6)}">
+                      <td id="6_status" style="background: #fff; color: #9f191f; width: 80px;"><font color='green'>已上传</font></td>
+                      <td id="6_qty"    style="background: #fff; width: 80px;" th:text="${attachmentMap[6].copies + '份 / ' + attachmentMap[6].pages + '页'}"></td>
+                      <td id="6_btn"    style="background: #fff; width: 100px;"><a class="btn btn-info btn-xs" th:href="@{'/auditsys/files/download/'+${attachmentMap[6].attachmentFileID}}">下载</a></td>
+                    </th:block>
+                    <th:block th:if="${!attachmentMap.containsKey(6)}">
+                      <td id="6_status" style="background: #fff; color: #9f191f; width: 80px;">未上传</td>
+                      <td id="6_qty"    style="background: #fff; width: 80px;">0份 / 0页</td>
+                      <td id="6_btn"    style="background: #fff; width: 100px;"></td>
+                    </th:block>
+                  </tr>
+                  <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                    <td style="width: 20px;">7</td>
+                    <td style="width: 280px;">工程竣工验收报告</td>
+                    <th:block th:if="${attachmentMap.containsKey(7)}">
+                      <td id="7_status" style="background: #fff; color: #9f191f; width: 80px;"><font color='green'>已上传</font></td>
+                      <td id="7_qty" style="background: #fff; width: 80px;" th:text="${attachmentMap[7].copies + '份 / ' + attachmentMap[7].pages + '页'}"></td>
+                      <td id="7_btn" style="background: #fff; width: 100px;"><a class="btn btn-info btn-xs" th:href="@{'/auditsys/files/download/'+${attachmentMap[7].attachmentFileID}}">下载</a></td>
+                    </th:block>
+                    <th:block th:if="${!attachmentMap.containsKey(7)}">
+                      <td id="7_status" style="background: #fff; color: #9f191f; width: 80px;">未上传</td>
+                      <td id="7_qty" style="background: #fff; width: 80px;">0份 / 0页</td>
+                      <td id="7_btn" style="background: #fff; width: 100px;"></td>
+                    </th:block>
+                  </tr>
+                  <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                    <td style="width: 20px;">8</td>
+                    <td style="width: 280px;">施工图纸或已核准的工程做法表</td>
+                    <th:block th:if="${attachmentMap.containsKey(8)}">
+                      <td id="8_status" style="background: #fff; color: #9f191f; width: 80px;"><font color='green'>已上传</font></td>
+                      <td id="8_qty" style="background: #fff; width: 80px;" th:text="${attachmentMap[8].copies + '份 / ' + attachmentMap[8].pages + '页'}"></td>
+                      <td id="8_btn" style="background: #fff; width: 100px;"><a class="btn btn-info btn-xs" th:href="@{'/auditsys/files/download/'+${attachmentMap[8].attachmentFileID}}">下载</a></td>
+                    </th:block>
+                    <th:block th:if="${!attachmentMap.containsKey(8)}">
+                      <td id="8_status" style="background: #fff; color: #9f191f; width: 80px;">未上传</td>
+                      <td id="8_qty" style="background: #fff; width: 80px;">0份 / 0页</td>
+                      <td id="8_btn" style="background: #fff; width: 100px;"></td>
+                    </th:block>
+                  </tr>
+                  <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                    <td style="width: 20px;">9</td>
+                    <td style="width: 280px;">隐蔽工程相关证明资料</td>
+                    <th:block th:if="${attachmentMap.containsKey(9)}">
+                      <td id="9_status" style="background: #fff; color: #9f191f; width: 80px;"><font color='green'>已上传</font></td>
+                      <td id="9_qty" style="background: #fff; width: 80px;" th:text="${attachmentMap[9].copies + '份 / ' + attachmentMap[9].pages + '页'}"></td>
+                      <td id="9_btn" style="background: #fff; width: 100px;"><a class="btn btn-info btn-xs" th:href="@{'/auditsys/files/download/'+${attachmentMap[9].attachmentFileID}}">下载</a></td>
+                    </th:block>
+                    <th:block th:if="${!attachmentMap.containsKey(9)}">
+                      <td id="9_status" style="background: #fff; color: #9f191f; width: 80px;">未上传</td>
+                      <td id="9_qty" style="background: #fff; width: 80px;">0份 / 0页</td>
+                      <td id="9_btn" style="background: #fff; width: 100px;"></td>
+                    </th:block>
+                  </tr>
+                  <tr style="background-color: whitesmoke; border: 1px solid #bbb;">
+                    <td style="width: 20px;">10</td>
+                    <td style="width: 280px;">其他有关资料(可选)</td>
+                    <th:block th:if="${attachmentMap.containsKey(10)}">
+                      <td id="10_status" style="background: #fff; color: #9f191f; width: 80px;"><font color='green'>已上传</font></td>
+                      <td id="10_qty" style="background: #fff; width: 80px;" th:text="${attachmentMap[10].copies + '份 / ' + attachmentMap[10].pages + '页'}"></td>
+                      <td id="10_btn" style="background: #fff; width: 100px;"><a class="btn btn-info btn-xs" th:href="@{'/auditsys/files/download/'+${attachmentMap[10].attachmentFileID}}">下载</a></td>
+                    </th:block>
+                    <th:block th:if="${!attachmentMap.containsKey(10)}">
+                      <td id="10_status" style="background: #fff; color: #9f191f; width: 80px;">未上传</td>
+                      <td id="10_qty" style="background: #fff; width: 80px;">0份 / 0页</td>
+                      <td id="10_btn" style="background: #fff; width: 100px;"></td>
+                    </th:block>
+                  </tr>
+                </th:block>
+                </tbody>
+              </table>
+
+              <th:block th:if="${jieSuanReportForm.isGranted == 0}">
                 <div style="padding: 10px; margin-top: 20px; border: 1px solid #bbb; background: whitesmoke; border-radius: 3px; width: 1000px;">
                   <div style="font-size: 20px;">审计操作</div>
                   <div style="margin-top: 10px;">
@@ -119,6 +268,11 @@
                               ], width:900, height:200, uiColor:'#f1e4db' }
                       );
                   </script>
+                  <br />
+                  <button onclick="showUploadModal()">添加附件</button>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <label id="uploadedName" style="color: green"></label>
+                  <input id="uploadedID" type="hidden" />
                 </div>
 
                 <div style="margin-top: 30px;">
@@ -131,6 +285,59 @@
           </div>
 
         </section>
+        <div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+          <div class="modal-dialog" role="document">
+            <div id="fileInfo" class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" style="font-family: 'Microsoft YaHei';">上传文件</h4>
+              </div>
+              <div class="modal-body" style="text-align: left;">
+                <div class="row" style="margin-left:auto; margin-right:auto; width: 80%; ">
+                  <div class="col-sm-12 col-md-12" style="float:left;">
+                    <form id="vform">
+                      <input type="hidden" id="tmpFileID"/>
+                      <div id="fileTypeZone">
+                        <div id="fileUploadZone" class="form-group" style="margin-top: -5px;">
+                          <div id="fine-uploader">
+                          </div>
+                          <script type="text/template" id="qq-template">
+                            <div class="qq-uploader-selector qq-uploader">
+                              <div class="qq-upload-button-selector qq-upload-button">
+                                <div>选择文件</div>
+                              </div>
+                              <ul class="qq-upload-list-selector qq-upload-list">
+                                <li>
+                                  <div class="qq-progress-bar-container-selector">
+                                    <div class="qq-progress-bar-selector qq-progress-bar"></div>
+                                  </div>
+                                  <span class="qq-upload-spinner-selector qq-upload-spinner"></span>
+                                  <span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>
+                                  <span class="qq-upload-file-selector qq-upload-file" style="max-width: 250px;"></span>
+                                  <span class="qq-upload-size-selector qq-upload-size"></span>
+                                  <a class="qq-upload-cancel-selector qq-upload-cancel" href="#">放弃上传</a>
+                                  <a class="qq-upload-retry-selector qq-upload-retry" href="#">重试</a>
+                                  <a class="qq-upload-delete-selector qq-upload-delete" href="#">删除</a>
+                                  <span class="qq-upload-status-text-selector qq-upload-status-text"></span>
+                                </li>
+                              </ul>
+                            </div>
+                          </script>
+                        </div>
+                      </div>
+                      <!--</template>-->
+                    </form>
+                  </div>
+                </div>
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" v-on:click="add">提交</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </section>
@@ -159,21 +366,26 @@
       var shending_val = 0;
       var shenjian_val = 0;
       var reasons = "";
+      var uploadedID = $("#uploadedID").val();
+
       if(audit_result == "banned") {
           shending_val = $("#shending_val").val();
           shenjian_val = $("#shenjian_val").val();
           reasons = editor.getData();
       }
-
       if(audit_result == "banned" && (shending_val == null || shending_val == "" || reasons == null || reasons == "")) {
           alert("审定值和审减原因不能为空!");
+          return;
+      }
+      if(uploadedID == null || uploadedID == "") {
+          alert("请上传审减解释文件");
           return;
       }
 
       $.ajax({
           type: "POST",
           url: path + "/audit-jiesuan-forms/submit-audits",
-          data: {projectID: projectID, audit_result: audit_result, shending_val: shending_val, shenjian_val: shenjian_val, reasons: reasons},
+          data: {projectID: projectID, audit_result: audit_result, shending_val: shending_val, shenjian_val: shenjian_val, reasons: reasons, uploadedID: uploadedID},
           success: function(result) {
               var res =  eval("("+result+")");
               alert(res["message"]);
@@ -185,6 +397,106 @@
       });
 
   }
+
+  function showUploadModal() {
+      $("#uploadFileModal").modal("show");
+  }
+
+  var fileInfo = new Vue({
+      el: '#fileInfo',
+      data: {
+      },
+      methods: {
+          validate: function () {
+              var errorSymbol = "<span style='color: red; font-size: 18px;'>&nbsp;x</span>";
+              var vform = $("#vform");
+              vform.validate({
+                  rules: {
+                      fileName: {
+                          required: true,
+                          minlength: 3
+                      }
+                  },
+                  messages: {
+                      fileName: {
+                          required: errorSymbol,
+                          minlength: "<span style='color: red; font-size: 14px;'>&nbsp;文件名长度不能少于3个字符</span>"
+                      }
+                  }
+              });
+              return vform;
+          },
+          add: function () {
+              var projectID = [[${project.ID}]];
+
+              var tmpFileID = $('#tmpFileID').val();
+
+              var url = $('#path').val() + '/audit-jiesuan-forms/upload-attachment';
+
+              if(tmpFileID == '' || tmpFileID == null) {
+                  alert('请上传文件');
+                  return;
+              }
+
+              $.ajax({
+                  type: "POST",
+                  url: url,
+                  data: {projectID: projectID, tmpFileID: tmpFileID},
+                  success: function(result) {
+                      var res =  eval(result);
+                      if(res["message"] == "上传文件成功") {
+                          $('#uploadedName').html('文件已上传');
+                          $('#uploadedID').val(res["uploaded"]);
+                      }
+                      alert(res["message"]);
+                      $("#uploadFileModal").modal("hide");
+                  },
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      alert(errorThrown);
+                  }
+              });
+          },
+          clear: function () {
+          }
+      }
+  });
+
+  var uploader = new qq.FineUploader({
+      debug: true,
+      multiple: false,
+      element: document.getElementById('fine-uploader'),
+      validation: {
+          allowedExtensions: ['jpeg', 'jpg', 'gif', 'png','bmp','xls','doc','ppt','xlsx','docx','pptx',
+              'pdf','txt','zip','rar','mp4','avi','rmvb','flv'],
+          sizeLimit: 100*1024*1024 // 100MB.
+      },
+      request: {
+          endpoint: '/auditsys/files/upload'
+      },
+      deleteFile: {
+          enabled: true,
+          forceConfirm: true,
+          confirmMessage: '确定要删除文件 {filename} 吗?',
+          deletingFailedText: '删除失败!',
+          endpoint: '/auditsys/files/delete_tmp'
+      },
+      retry: {
+          enableAuto: true
+      },
+      callbacks: {
+          onComplete: function(id, failIDs, responseJSON)  {
+              $("#tmpFileID").val(responseJSON.newUuid);
+          }
+
+      }
+  });
+
+  $('#uploadFileModal').on('hidden.bs.modal', function () {
+      uploader.clearStoredFiles();
+      fileInfo.clear();
+      clearForm($('#vform'));
+      $('#vform').validate().resetForm();
+  });
 
   /*]]>*/
 </script>

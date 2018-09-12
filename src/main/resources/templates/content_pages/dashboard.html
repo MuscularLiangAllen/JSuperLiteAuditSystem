@@ -3,9 +3,7 @@
 
 <head th:replace="/modules/header::css_library"></head>
 
-<body class="hold-transition skin-blue sidebar-mini">
-
-    <!-- Content Header (Page header) -->
+<body class="hold-transition skin-blue sidebar-mini" style="background-color: whitesmoke;">
     <section class="content-header">
       <h1>
         任务总览
@@ -19,14 +17,11 @@
 
     <!-- Main content -->
     <section class="content">
-      <!-- Small boxes (Stat box) -->
       <div class="row">
-        <div class="col-lg-3 col-xs-6">
-          <!-- small box -->
+        <div class="col-md-3 col-lg-3 col-xs-6">
           <div class="small-box bg-aqua">
             <div class="inner">
               <h3>5</h3>
-
               <p>已发布任务数</p>
             </div>
             <div class="icon">
@@ -36,7 +31,7 @@
           </div>
         </div>
         <!-- ./col -->
-        <div class="col-lg-3 col-xs-6">
+        <div class="col-md-3 col-lg-3 col-xs-6">
           <!-- small box -->
           <div class="small-box bg-green">
             <div class="inner">
@@ -50,8 +45,7 @@
             <a href="#" class="small-box-footer">详细信息 <i class="fa fa-arrow-circle-right"></i></a>
           </div>
         </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-xs-6">
+        <div class="col-md-3 col-lg-3 col-xs-6">
           <!-- small box -->
           <div class="small-box bg-yellow">
             <div class="inner">
@@ -65,8 +59,7 @@
             <a href="#" class="small-box-footer">详细信息 <i class="fa fa-arrow-circle-right"></i></a>
           </div>
         </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-xs-6">
+        <div class="col-md-3 col-lg-3 col-xs-6">
           <!-- small box -->
           <div class="small-box bg-red">
             <div class="inner">
@@ -81,14 +74,9 @@
             <a href="#" class="small-box-footer">详细信息 <i class="fa fa-arrow-circle-right"></i></a>
           </div>
         </div>
-        <!-- ./col -->
       </div>
-      <!-- /.row -->
-      <!-- Main row -->
       <div class="row">
-        <!-- Left col -->
-        <section class="col-lg-7 connectedSortable">
-          <!-- TO DO List -->
+        <section class="col-md-9 col-lg-9 connectedSortable">
           <div class="box box-primary">
             <div class="box-header">
               <i class="ion ion-clipboard"></i>
@@ -96,7 +84,6 @@
               <h3 class="box-title" style="font-family: 'Microsoft YaHei'; ">消息列表</h3>
 
             </div>
-            <!-- /.box-header -->
             <div class="box-body table-responsive">
               <table class="table table-hover">
                 <tr style="background-color: #EEE;">
@@ -153,20 +140,14 @@
                 </ul>
               </div>
             </div>
-            <!-- /.box-body -->
 
           </div>
-          <!-- /.box -->
 
-          <!-- TO DO List -->
           <div class="box box-success">
             <div class="box-header">
               <i class="ion ion-clipboard"></i>
-
               <h3 class="box-title" style="font-family: 'Microsoft YaHei'; ">项目审计进度</h3>
-
             </div>
-            <!-- /.box-header -->
             <div class="box-body table-responsive">
               <table class="table table-hover">
                 <tr style="background-color: #EEE;">
@@ -223,19 +204,10 @@
                 </ul>
               </div>
             </div>
-            <!-- /.box-body -->
-
           </div>
-          <!-- /.box -->
-
-          <!-- quick email widget -->
-
 
         </section>
-        <!-- /.Left col -->
-        <!-- right col (We are only adding the ID to make the widgets sortable)-->
-        <section class="col-lg-5 connectedSortable">
-
+        <section class="col-md-3 col-lg-3 connectedSortable">
           <div class="box box-widget widget-user-2">
             <!-- Add the bg color to the header using any of the bg-* classes -->
             <div class="widget-user-header" style="background-color: #80B5D3;">
@@ -251,97 +223,14 @@
                 <li><a href="#">电子邮箱 <span class="pull-right badge bg-blue" style="font-size: 15px;">liangtee@126.com</span></a></li>
                 <li><a href="#">联系电话 <span class="pull-right badge bg-aqua" style="font-size: 15px;">13066000000</span></a></li>
                 <li><a href="#">所属部门 <span class="pull-right badge bg-green" style="font-size: 15px;">运营中心</span></a></li>
-                <li><a href="#">参与项目 <span class="pull-right badge bg-red">15</span></a></li>
+                <li><a href="#">操作 <span class="pull-right badge bg-red" style="font-size: 15px;">修改信息</span></a></li>
               </ul>
             </div>
           </div>
-
-
-
-          <!-- Calendar -->
-          <div class="box box-solid bg-green-gradient">
-            <div class="box-header">
-              <i class="fa fa-calendar"></i>
-
-              <h3 class="box-title">Calendar</h3>
-              <!-- tools box -->
-              <div class="pull-right box-tools">
-                <!-- button with a dropdown -->
-                <div class="btn-group">
-                  <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-toggle="dropdown">
-                    <i class="fa fa-bars"></i></button>
-                  <ul class="dropdown-menu pull-right" role="menu">
-                    <li><a href="#">Add new event</a></li>
-                    <li><a href="#">Clear events</a></li>
-                    <li class="divider"></li>
-                    <li><a href="#">View calendar</a></li>
-                  </ul>
-                </div>
-                <button type="button" class="btn btn-success btn-sm" data-widget="collapse"><i class="fa fa-minus"></i>
-                </button>
-                <button type="button" class="btn btn-success btn-sm" data-widget="remove"><i class="fa fa-times"></i>
-                </button>
-              </div>
-              <!-- /. tools -->
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body no-padding">
-              <!--The calendar -->
-              <div id="calendar" style="width: 100%"></div>
-            </div>
-            <!-- /.box-body -->
-            <div class="box-footer text-black">
-              <div class="row">
-                <div class="col-sm-6">
-                  <!-- Progress bars -->
-                  <div class="clearfix">
-                    <span class="pull-left">Task #1</span>
-                    <small class="pull-right">90%</small>
-                  </div>
-                  <div class="progress xs">
-                    <div class="progress-bar progress-bar-green" style="width: 90%;"></div>
-                  </div>
-
-                  <div class="clearfix">
-                    <span class="pull-left">Task #2</span>
-                    <small class="pull-right">70%</small>
-                  </div>
-                  <div class="progress xs">
-                    <div class="progress-bar progress-bar-green" style="width: 70%;"></div>
-                  </div>
-                </div>
-                <!-- /.col -->
-                <div class="col-sm-6">
-                  <div class="clearfix">
-                    <span class="pull-left">Task #3</span>
-                    <small class="pull-right">60%</small>
-                  </div>
-                  <div class="progress xs">
-                    <div class="progress-bar progress-bar-green" style="width: 60%;"></div>
-                  </div>
-
-                  <div class="clearfix">
-                    <span class="pull-left">Task #4</span>
-                    <small class="pull-right">40%</small>
-                  </div>
-                  <div class="progress xs">
-                    <div class="progress-bar progress-bar-green" style="width: 40%;"></div>
-                  </div>
-                </div>
-                <!-- /.col -->
-              </div>
-              <!-- /.row -->
-            </div>
-          </div>
-          <!-- /.box -->
-
         </section>
-        <!-- right col -->
       </div>
-      <!-- /.row (main row) -->
 
     </section>
-    <!-- /.content -->
 
 <div th:replace="/modules/bottom::js_library"></div>
 

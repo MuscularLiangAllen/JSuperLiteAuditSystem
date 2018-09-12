@@ -48,6 +48,9 @@ public class JieSuanAuditResult {
     @Column(name = "SHENJI_COMPANY", nullable = false)
     private String shenjiCompany;
 
+    @Column(name = "FILE_ID", nullable = false)
+    private String fileID;
+
     @Transient
     public static final int GRANTED = 1;
 
@@ -57,7 +60,8 @@ public class JieSuanAuditResult {
     public JieSuanAuditResult() {
     }
 
-    public JieSuanAuditResult(String id, String projectID, int isGranted, double shenDing_val, double shenJian_val, String reasons, String time, String shenjiCompany) {
+    public JieSuanAuditResult(String id, String projectID, int isGranted, double shenDing_val, double shenJian_val,
+                              String reasons, String time, String shenjiCompany, String fileID) {
         this.id = id;
         this.projectID = projectID;
         this.isGranted = isGranted;
@@ -66,6 +70,7 @@ public class JieSuanAuditResult {
         this.reasons = reasons;
         this.time = time;
         this.shenjiCompany = shenjiCompany;
+        this.fileID = fileID;
     }
 
     public String getId() {
@@ -122,5 +127,13 @@ public class JieSuanAuditResult {
 
     public void setShenjiCompany(String shenjiCompany) {
         this.shenjiCompany = shenjiCompany;
+    }
+
+    public String getFileID() {
+        return fileID;
+    }
+
+    public void setFileID(String fileID) {
+        this.fileID = fileID;
     }
 }

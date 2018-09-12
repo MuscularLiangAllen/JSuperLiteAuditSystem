@@ -54,6 +54,9 @@ public class JieSuanReportForm {
     @Column(name = "FILE_ID", nullable = true)
     private String fileID;
 
+    @Column(name = "ATTACHMENT_FOLDER_ID", nullable = false)
+    private String attachmentFolderID;
+
     @Column(name = "IS_GRANTED", nullable = false)
     private int isGranted;
 
@@ -158,5 +161,13 @@ public class JieSuanReportForm {
 
     public void setFileID(String fileID) {
         this.fileID = fileID;
+    }
+
+    public String getAttachmentFolderID() {
+        return attachmentFolderID;
+    }
+
+    public void setAttachmentFolderID(String attachmentFolderID) {
+        this.attachmentFolderID = attachmentFolderID;
     }
 }

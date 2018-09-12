@@ -61,6 +61,12 @@ public class AuditJieSuanReportFormController extends BaseController  {
     @Autowired
     private FileService fileService;
 
+    @Autowired
+    private JieSuanAttachmentService jieSuanAttachmentService;
+
+    @Autowired
+    private ShenJianReasonService shenJianReasonService;
+
     @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_DEPT_STUFF)
     @RequestMapping(path = "show", method = RequestMethod.GET)
     public String show(HttpServletRequest request, Model model) {
@@ -76,6 +82,10 @@ public class AuditJieSuanReportFormController extends BaseController  {
         if(jieSuanReportService.isExist("PROJECT_ID = ?", projectID)) {
             JieSuanReportForm jieSuanReportForm = jieSuanReportService.findAll("PROJECT_ID = ?", projectID).get(0);
             model.addAttribute("jieSuanReportForm", jieSuanReportForm);
+
+            Map<Integer, JieSuanAttachment> attachmentMap = new HashMap<>();
+            jieSuanAttachmentService.findAll("BELONG_TO_PROJECT_ID = ?", projectID).stream().forEach(a -> attachmentMap.put(a.getSeq(), a));
+            model.addAttribute("attachmentMap", attachmentMap);
         }
 
         Project project = projectService.findOne(projectID);
@@ -85,12 +95,64 @@ public class AuditJieSuanReportFormController extends BaseController  {
     }
 
     @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_DEPT_STUFF)
+    @RequestMapping(path = "upload-attachment", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    public @ResponseBody String uploadAttachment(@RequestParam(name="projectID", required = true) String projectID,
+                                                 @RequestParam(name="tmpFileID", required = true) String tmpFileID,
+                                                 HttpServletRequest request, Model model) {
+
+        JSONObject msg = new JSONObject();
+
+        FileInfo jieSuanAttachmentHomeFolder = null;
+
+        StringBuffer grantedUserIDs = new StringBuffer();
+        userService.findByDeptID(super.getOperator().getDeptID()).forEach(u -> grantedUserIDs.append(u.getUID()).append(","));
+
+        List<FileInfo> result = fileService.findAll("BELONG_TO_PROJECT = ? AND FILE_NAME = ?", projectID, "审减反馈意见");
+        if(result != null && result.size() != 0)
+            jieSuanAttachmentHomeFolder = result.get(0);
+        else {
+            FileInfo projectRootFolder = fileService.findAll("belong_to_project = ? and parent_folder_id = ?", projectID, FileInfo.NO_PARENT_FOLDER).get(0);
+            jieSuanAttachmentHomeFolder = fileService.createFile(super.getOperator(), "审减反馈意见", FileInfo.FOLDER_TYPE, projectRootFolder.getUUID(),
+                    "", grantedUserIDs.toString(), "", projectID, FileInfo.NON_EDITABLE);
+        }
+
+        FileInfo attachment = null;
+        if(tmpFileID != null && !tmpFileID.isEmpty()) {
+            attachment = fileService.createFile(super.getOperator(), TimeFormater.format("yyMMddHHmmss"), FileInfo.FILE_TYPE, jieSuanAttachmentHomeFolder.getUUID(),
+                    "", grantedUserIDs.toString(), tmpFileID, projectID, FileInfo.NON_EDITABLE);
+            if(attachment == null) {
+                msg.put("message", "上传文件失败");
+                return msg.toJSONString();
+            }
+
+            String id = UUID.randomUUID().toString().replace("-", "");
+            String belongToProjectID = projectID;
+            String attachmentFileID = attachment.getUUID();
+            String time = TimeFormater.format("yyyy-MM-dd HH:mm:ss");
+
+            ShenJianReasonFile shenJianReasonFile = new ShenJianReasonFile(id, belongToProjectID, attachmentFileID, time, getOperator().getName());
+
+            if(shenJianReasonService.save(shenJianReasonFile) == null) {
+                msg.put("message", "保存文件信息失败");
+                return msg.toJSONString();
+            }
+
+        }
+
+        msg.put("message", "上传文件成功");
+        msg.put("uploaded", attachment.getUUID());
+
+        return msg.toJSONString();
+    }
+
+    @AccessControl(accessLevel = UserConfs.RoleCode.USER_TYPE_DEPT_STUFF)
     @RequestMapping(path = "submit-audits", method = RequestMethod.POST)
     public @ResponseBody String submitForm(@RequestParam(name="projectID", required = true) String projectID,
                       @RequestParam(name="audit_result", required = true) String audit_result,
                       @RequestParam(name="shending_val", required = true) double shending_val,
                       @RequestParam(name="shenjian_val", required = true) double shenjian_val,
                       @RequestParam(name="reasons", required = true) String reasons,
+                      @RequestParam(name="uploadedID", required = true) String uploadedID,
                       HttpServletRequest request, Model model) {
 
         JSONObject jsonObject = new JSONObject();
@@ -98,7 +160,7 @@ public class AuditJieSuanReportFormController extends BaseController  {
         if(audit_result.toLowerCase().equals("banned")) {
             if(jieSuanAuditResultService.saveOrUpdate(new JieSuanAuditResult(UUID.randomUUID().toString().replace("-", ""),
                     projectID, JieSuanAuditResult.NOT_GRANTED, shending_val, shenjian_val, reasons,
-                    TimeFormater.format("yyyy-MM-dd HH:mm:ss"), "")) == null) {
+                    TimeFormater.format("yyyy-MM-dd HH:mm:ss"), "", uploadedID)) == null) {
 
                 jsonObject.put("message", "保存审计结果失败");
                 return jsonObject.toJSONString();
@@ -109,7 +171,7 @@ public class AuditJieSuanReportFormController extends BaseController  {
         } else {
             if(jieSuanAuditResultService.saveOrUpdate(new JieSuanAuditResult(UUID.randomUUID().toString().replace("-", ""),
                     projectID, JieSuanAuditResult.GRANTED, 0D, 0D, "",
-                    TimeFormater.format("yyyy-MM-dd HH:mm:ss"), "")) == null) {
+                    TimeFormater.format("yyyy-MM-dd HH:mm:ss"), "", uploadedID)) == null) {
 
                 jsonObject.put("message", "保存审计结果失败");
                 return jsonObject.toJSONString();
